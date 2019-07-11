@@ -102,6 +102,8 @@ public:
 
     int32_t road_class_;
 
+    int32_t f_class_;
+
     int8_t form_way_;
 
     vector<shared_ptr<KDCoord>> points_;

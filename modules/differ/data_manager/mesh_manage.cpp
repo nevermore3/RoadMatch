@@ -105,7 +105,10 @@ bool MeshObj::LoadRoad(string file_name, shared_ptr<STRtree> quadtree) {
             continue;
         }
 
-        if (road->road_class_ >= 47000 && road->road_class_ != 51000 && road->form_way_ != 2  && road->road_class_ != 52000)
+//        if (road->road_class_ >= 47000 && road->road_class_ != 51000 && road->form_way_ != 2  && road->road_class_ != 52000)
+//            continue;
+
+        if (road->road_class_ != 41000)
             continue;
 
         //read road geometry
@@ -177,6 +180,7 @@ bool MeshObj::LoadNode(string file_name) {
             int64_t morton_code = MortonCode::GetMortonCodeFromRAWCoord(node->coord_.lng_, node->coord_.lat_);
             auto adjnode = adj_nodes_.find(morton_code);
             if (adjnode != adj_nodes_.end()) {
+
                 node->adj_mesh_id_ = adjnode->second->mesh_id_;
                 node->adj_id_ = adjnode->second->id_;
             } else {
@@ -203,23 +207,23 @@ bool MeshObj::BuildTopReleation() {
         int32_t roadid = roadit.first;
         shared_ptr<KDRoad> road = roadit.second;
 
-        if (road->road_class_ >= 47000 && road->road_class_ != 51000 && road->form_way_ != 2 && road->road_class_ != 52000) {
- //       if (road->road_class_ > 47000 && road->road_class_ != 51000) {
-
-                //"41000：高速公路
-            //42000：国道
-            //43000：城市快速路
-            //44000：城市主干路
-            //45000：城市次干路
-            //47000：城市普通道路
-            //51000：省道
-            //52000：县道
-            //53000：乡道
-            //54000：县乡村内部道路
-            //49：小路"
-            //过滤掉城市普通道路，保留城市次干路以上级别
-            continue;
-        }
+//        if (road->road_class_ >= 47000 && road->road_class_ != 51000 && road->form_way_ != 2 && road->road_class_ != 52000) {
+// //       if (road->road_class_ > 47000 && road->road_class_ != 51000) {
+//
+//                //"41000：高速公路
+//            //42000：国道
+//            //43000：城市快速路
+//            //44000：城市主干路
+//            //45000：城市次干路
+//            //47000：城市普通道路
+//            //51000：省道
+//            //52000：县道
+//            //53000：乡道
+//            //54000：县乡村内部道路
+//            //49：小路"
+//            //过滤掉城市普通道路，保留城市次干路以上级别
+//            continue;
+//        }
 
         //from node
         auto fnodeit = road_nodes_.find(road->f_node_id_);
@@ -238,8 +242,9 @@ bool MeshObj::BuildTopReleation() {
         if (tnodeit != road_nodes_.end()) {
             shared_ptr<KDRoadNode> node = tnodeit->second;
             node->to_roads_.emplace_back(road);
-            if(road->direction_ == 1 || road->direction_ == 0)
-                node->from_roads_.emplace_back(road);
+            node->from_roads_.emplace_back(road);
+//            if(road->direction_ == 1 || road->direction_ == 0)
+//                node->from_roads_.emplace_back(road);
         } else {
             LOG(ERROR) << "Not find node " << road->t_node_id_;
             return false;
@@ -303,6 +308,157 @@ bool MeshObj::LoadAdjNode(string file_name) {
 // meshmanage
 /////////////////////////////////////////////////////////////////////////////////////
 
+void OutputHighWay(MeshManage * meshManage) {
+    string dbf_file = "/home/liujian/liujian/data/differ/ROAD.dbf";
+    string shp_file = "/home/liujian/liujian/data/differ/ROAD.shp";
+
+    SHPHandle ptrRoadShp_ = nullptr;
+    DBFHandle ptrRoadDbf_ = nullptr;
+    ptrRoadShp_ = SHPCreate(shp_file.c_str(), SHPT_ARCZ);
+    ptrRoadDbf_ = DBFCreate(dbf_file.c_str());
+
+    DBFAddField(ptrRoadDbf_, "ID", FTLong, 16, 0);
+    DBFAddField(ptrRoadDbf_, "MESHID", FTString, 16, 0);
+    DBFAddField(ptrRoadDbf_, "DIRECTION", FTInteger, 10, 0);
+    DBFAddField(ptrRoadDbf_, "SNODE_ID", FTLong, 16, 0);
+    DBFAddField(ptrRoadDbf_, "ENODE_ID", FTLong, 16, 0);
+
+    int nCount = 0;
+    for (auto mesh_it : meshManage->meshs_) {
+        const string& meshid = mesh_it.first;
+        auto& mesh_obj = mesh_it.second;
+
+        for(auto road_it: mesh_obj->roads_) {
+            //write geo object
+            int64_t roadid = road_it.first;
+            auto& road = road_it.second;
+            size_t coord_nums = road->points_.size();
+            double *coords_x = new double[coord_nums];
+            double *coords_y = new double[coord_nums];
+            double *coords_z = new double[coord_nums];
+            //
+            for (int j = 0; j < coord_nums; j++) {
+                coords_x[j] = road->points_[j]->lng_;
+                coords_y[j] = road->points_[j]->lat_;
+                coords_z[j] = road->points_[j]->z_;
+            }
+            //
+            SHPObject *shpObj = SHPCreateSimpleObject(SHPT_ARCZ, (int) coord_nums, coords_x, coords_y, coords_z);
+            nCount = SHPWriteObject(ptrRoadShp_, -1, shpObj);
+            delete[] coords_x;
+            delete[] coords_y;
+            delete[] coords_z;
+
+            DBFWriteLongAttribute(ptrRoadDbf_, nCount, 0, road->id_);
+            DBFWriteStringAttribute(ptrRoadDbf_, nCount, 1, road->mesh_id_.c_str());
+            DBFWriteIntegerAttribute(ptrRoadDbf_, nCount, 2, road->direction_);
+            DBFWriteLongAttribute(ptrRoadDbf_, nCount, 3, road->f_node_id_);
+            DBFWriteLongAttribute(ptrRoadDbf_, nCount, 4, road->t_node_id_);
+
+
+            SHPDestroyObject(shpObj);
+        }
+    }
+
+    if (ptrRoadShp_ != nullptr) {
+        SHPClose(ptrRoadShp_);
+    }
+    if (ptrRoadDbf_ != nullptr) {
+        DBFClose(ptrRoadDbf_);
+    }
+}
+
+void OutputHighNode(MeshManage * meshManage) {
+    string dbf_file = "/home/liujian/liujian/data/differ/NODE.dbf";
+    string shp_file = "/home/liujian/liujian/data/differ/NODE.shp";
+
+    SHPHandle ptrRoadShp_ = nullptr;
+    DBFHandle ptrRoadDbf_ = nullptr;
+    ptrRoadShp_ = SHPCreate(shp_file.c_str(), SHPT_POINTZ);
+    ptrRoadDbf_ = DBFCreate(dbf_file.c_str());
+
+    DBFAddField(ptrRoadDbf_, "ID", FTLong, 16, 0);
+    DBFAddField(ptrRoadDbf_, "MESHID", FTString, 16, 0);
+
+    int nCount = 0;
+    for (auto mesh_it : meshManage->meshs_) {
+        const string& meshid = mesh_it.first;
+        auto& mesh_obj = mesh_it.second;
+        set<int32_t> id_set;
+        for(auto road_it: mesh_obj->roads_) {
+            //write geo object
+            int32_t roadid = road_it.first;
+            auto& road = road_it.second;
+
+            int32_t f_node_id = road->f_node_id_;
+            int32_t t_node_id = road->t_node_id_;
+
+
+            if(id_set.find(f_node_id) == id_set.end()) {
+                auto &f_node = mesh_obj->road_nodes_.find(f_node_id)->second;
+
+                size_t coord_nums = 1;
+                double *coords_x = new double[coord_nums];
+                double *coords_y = new double[coord_nums];
+                double *coords_z = new double[coord_nums];
+                //
+                coords_x[0] = f_node->coord_.lng_;
+                coords_y[0] = f_node->coord_.lat_;
+                coords_z[0] = f_node->coord_.z_;
+
+                //
+                SHPObject *shpObj = SHPCreateSimpleObject(SHPT_POINTZ, (int) coord_nums, coords_x, coords_y, coords_z);
+                nCount = SHPWriteObject(ptrRoadShp_, -1, shpObj);
+                delete[] coords_x;
+                delete[] coords_y;
+                delete[] coords_z;
+
+                DBFWriteLongAttribute(ptrRoadDbf_, nCount, 0, f_node->id_);
+                DBFWriteStringAttribute(ptrRoadDbf_, nCount, 1, f_node->mesh_id_.c_str());
+
+                id_set.insert(f_node_id);
+
+                SHPDestroyObject(shpObj);
+            }
+
+            if(id_set.find(t_node_id) == id_set.end()) {
+                auto &t_node = mesh_obj->road_nodes_.find(t_node_id)->second;
+
+                size_t coord_nums = 1;
+                double *coords_x = new double[coord_nums];
+                double *coords_y = new double[coord_nums];
+                double *coords_z = new double[coord_nums];
+                //
+                coords_x[0] = t_node->coord_.lng_;
+                coords_y[0] = t_node->coord_.lat_;
+                coords_z[0] = t_node->coord_.z_;
+
+                //
+                SHPObject *shpObj = SHPCreateSimpleObject(SHPT_POINTZ, (int) coord_nums, coords_x, coords_y, coords_z);
+                nCount = SHPWriteObject(ptrRoadShp_, -1, shpObj);
+                delete[] coords_x;
+                delete[] coords_y;
+                delete[] coords_z;
+
+                DBFWriteLongAttribute(ptrRoadDbf_, nCount, 0, t_node->id_);
+                DBFWriteStringAttribute(ptrRoadDbf_, nCount, 1, t_node->mesh_id_.c_str());
+
+                id_set.insert(t_node_id);
+
+                SHPDestroyObject(shpObj);
+            }
+
+        }
+    }
+
+    if (ptrRoadShp_ != nullptr) {
+        SHPClose(ptrRoadShp_);
+    }
+    if (ptrRoadDbf_ != nullptr) {
+        DBFClose(ptrRoadDbf_);
+    }
+}
+
 bool MeshManage::LoadData(const KDExtent &extent) {
     int xmin = (int) (extent.xmin_ * LONGLAT_RATIO);
     int xmax = (int) (extent.xmax_ * LONGLAT_RATIO);
@@ -338,20 +494,28 @@ bool MeshManage::LoadData(const KDExtent &extent) {
         if (it == meshs_.end()) {
             string meshPath = GetMeshFullPath(meshname);
             shared_ptr<MeshObj> kdMesh = make_shared<MeshObj>();
+
             LOG(INFO) << "Prepare grid " << meshname;
 
             if (kdMesh->LoadMesh(meshname, meshPath, strtree_)) {
                 meshs_.insert(make_pair(meshname, kdMesh));
             } else {
-                LOG(ERROR) << "Load mesh error. path '" << meshPath << "'";
+//                LOG(ERROR) << "Load mesh error. path '" << meshPath << "'";
                 continue;
             }
         }
     }
+    int roadcnt = 0;
+    for(auto mesh_it : meshs_) {
+        roadcnt += mesh_it.second->roads_.size();
+    }
+
+    cout<<"    roadcnt = "<<roadcnt<<endl;
 
     int meshCount = dim.width * dim.height;
     LOG(INFO) << "Prepare mesh count " << meshCount;
-
+    OutputHighWay(this);
+    OutputHighNode(this);
     return true;
 
 }

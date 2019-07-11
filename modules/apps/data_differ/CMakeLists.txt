@@ -1,4 +1,4 @@
-project(hdmap_differ_fusion)
+project(sdmap_differ_fusion)
 
 #include and src file
 file(GLOB_RECURSE project_header *.h)

@@ -16,6 +16,9 @@ public:
 
 public:
     virtual bool LoadData(const KDExtent& extent) = 0;
+    virtual shared_ptr<MeshObj> GetMesh(const string& mesh_id) = 0;
+
+    virtual shared_ptr<KDRoad> GetRoad(string mesh_id, int32_t road_id) = 0;
 };
 
 class DataManager {
