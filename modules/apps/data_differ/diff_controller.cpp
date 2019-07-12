@@ -38,6 +38,7 @@ bool DiffController::Differing() {
     des_coord->lat_ =  39.721944444444;
 
     PathEngine engine;
+    engine.SetSearchCount(5000);
     std::list<shared_ptr<KDRoad>> result;
     engine.FindPath((MeshManager*)data_manager.base_data_manager_, road_src, src_coord, road_dst, des_coord, result);
 

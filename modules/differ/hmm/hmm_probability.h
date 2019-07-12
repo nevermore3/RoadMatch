@@ -29,7 +29,8 @@ private:
 
     static double BuilePathLength(const list<shared_ptr<KDRoad>>& road_list,
                            shared_ptr<Bind> sourcePosition,
-                           shared_ptr<Bind> targetPosition);
+                           shared_ptr<Bind> targetPosition,
+                           MeshManager *meshManage);
 };
 
 

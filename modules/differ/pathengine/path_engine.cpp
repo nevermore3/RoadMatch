@@ -32,7 +32,7 @@ bool FunctionBufferFilter::CheckRoadValid(int fun,double dis){
 }
 
 PathEngine::PathEngine() {
-    search_count_ = 5000;
+    search_count_ = 20;
     fc_valid_ = true;
 }
 
@@ -78,9 +78,6 @@ bool PathEngine::Init(MeshManager* mesh_manage, shared_ptr<KDRoad> road_src,
 }
 
 void PathEngine::Clear() {
-    cout<<"path_close_map size="<<path_close_map_.size()<<endl;
-    cout<<"path_open_map_ size="<<path_open_map_.size()<<endl;
-
     path_close_map_.clear();
     path_open_map_.clear();
 

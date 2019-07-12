@@ -13,7 +13,7 @@
 #include "util/match_geo_util.h"
 #include "util/mesh_feature_key_util.h"
 
-//#define DEBUG_MATCHING 1
+#define DEBUG_MATCHING 1
 
 bool Viterbi::Compute(const list<shared_ptr<CadidatesStep>> &steplist,
                       bool keepMessageHistory,
@@ -106,6 +106,12 @@ void Viterbi::ForwardStep(shared_ptr<CadidatesStep> prevStep,
         double maxLogProbability = DoubleNegInfinity;
         shared_ptr<Bind> maxPrevState;
         //找出之前的step候选项到当前step可能性最大的
+        if(curState->match_road_->mesh_id_ == "J50F005020" && curState->match_road_->id_ == 1495)
+            cout<<"asdfkjas;dlkjf;"<<endl;
+
+        if(curState->match_road_->mesh_id_ == "J50F005020" && curState->match_road_->id_ == 1479)
+            cout<<"asdfkjas;dlkjf;"<<endl;
+
         for (auto prevState : prevStep->candidates_) {
             double logProbability = HmmProbability::TransitionLogProbability(prevState,
                                                                              curState, path_map_, mesh_manage);
@@ -128,7 +134,7 @@ void Viterbi::ForwardStep(shared_ptr<CadidatesStep> prevStep,
 #ifdef DEBUG_MATCHING
         cout<<curState->match_road_->id_<<" "<<maxPrevState->match_road_->id_
             <<" "<<maxLogProbability
-            <<" ("<<curState->query_point_->coord_->lng_<<","<<curState->query_point_->coord_->lat_<<")"<<endl;
+            <<" ("<<curState->query_point_->lng_<<","<<curState->query_point_->lat_<<")"<<endl;
 #endif
         //距离概率
         double emission_probability = HmmProbability::EmissionLogProbability(curState);

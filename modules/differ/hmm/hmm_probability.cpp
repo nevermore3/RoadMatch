@@ -22,12 +22,6 @@ double HmmProbability::EmissionLogProbability(shared_ptr<Bind> roadPosition) {
 
  //   return normalDistribution(measurementErrorSigma,(roadPosition->distance_/100));
     int dist = roadPosition->distance_;
-    if(roadPosition->match_road_->form_way_ == 9 || roadPosition->match_road_->form_way_ == 10
-            || roadPosition->match_road_->form_way_ == 7)
-        dist *= 1.5;//5
-
-    if(roadPosition->match_road_->form_way_ == 3 || roadPosition->match_road_->form_way_ == 6 || roadPosition->match_road_->form_way_ == 5)
-        dist *= 1.5;//3
     return log(normalDistribution(measurementErrorSigma,(dist/100)));
 }
 
@@ -98,13 +92,13 @@ double HmmProbability::GetRoutelength(shared_ptr<Bind> sourcePosition,
     auto road_list_it = path_map.find(path_key);
     if(road_list_it != path_map.end()) {
         list<shared_ptr<KDRoad>>& road_list = road_list_it->second;
-        return BuilePathLength(road_list, sourcePosition, targetPosition);
+        return BuilePathLength(road_list, sourcePosition, targetPosition, meshManage);
     } else {
         PathEngine engine;
         list<shared_ptr<KDRoad>> road_list;
         if (engine.FindPath(meshManage, sourcePosition->match_road_,sourcePosition->snapped_point_,
                             targetPosition->match_road_, targetPosition->snapped_point_, road_list)) {
-            double length = BuilePathLength(road_list, sourcePosition, targetPosition);
+            double length = BuilePathLength(road_list, sourcePosition, targetPosition, meshManage);
             path_map.insert(make_pair(path_key, road_list));
             return length;
         } else {
@@ -114,7 +108,7 @@ double HmmProbability::GetRoutelength(shared_ptr<Bind> sourcePosition,
 }
 
 string HmmProbability::GetPathKey(shared_ptr<Bind> sourcePosition,
-                  shared_ptr<Bind> targetPosition) {
+                                  shared_ptr<Bind> targetPosition) {
     string src = sourcePosition->match_road_->mesh_id_ +
                         to_string(sourcePosition->match_road_->id_);
     string des = targetPosition->match_road_->mesh_id_ +
@@ -124,25 +118,123 @@ string HmmProbability::GetPathKey(shared_ptr<Bind> sourcePosition,
 
 double HmmProbability::BuilePathLength(const list<shared_ptr<KDRoad>>& road_list,
                                        shared_ptr<Bind> sourcePosition,
-                                       shared_ptr<Bind> targetPosition) {
+                                       shared_ptr<Bind> targetPosition,
+                                       MeshManager *meshManage) {
     double length = 0;
-    for (auto road : road_list) {
-        if (road->id_ == sourcePosition->match_road_->id_ &&
-                road->mesh_id_ == sourcePosition->match_road_->mesh_id_) {
-            if (road->direction_ == 3)
-                length += sourcePosition->length_to_start_;
-            else
-                length += sourcePosition->length_to_end_;
 
-        } else if (road->id_ == targetPosition->match_road_->id_ &&
-                   road->mesh_id_ == targetPosition->match_road_->mesh_id_) {
+    auto road_it = road_list.begin();
+    auto next_it = road_it;
+    PathEngine::ConnType last_conn_type = PathEngine::TAIL_HEAD;
+    while(road_it != road_list.end()) {
+        ++next_it;
+        auto road = *road_it;
+        if(next_it == road_list.end()) {
             if (road->direction_ == 3)
                 length += targetPosition->length_to_end_;
-            else
+            else if (road->direction_ == 2)
                 length += targetPosition->length_to_start_;
+            else {
+                if (last_conn_type == PathEngine::HEAD_HEAD ||
+                        last_conn_type == PathEngine::TAIL_HEAD) {
+                    length += targetPosition->length_to_start_;
+                } else {
+                    length += targetPosition->length_to_end_;
+                }
 
-        } else
-            length += road->length_;
+            }
+            break;
+        }
+        PathEngine::ConnType conn_type =
+                PathEngine::GetConnectType(meshManage, (*road_it), (*next_it));
+
+        if(conn_type == PathEngine::UN_CONN)
+            break;
+        if(conn_type == PathEngine::TAIL_HEAD) {
+            if (road->id_ == sourcePosition->match_road_->id_ &&
+                road->mesh_id_ == sourcePosition->match_road_->mesh_id_) {
+                if (road->direction_ == 3)
+                    length += sourcePosition->length_to_start_;
+                else
+                    length += sourcePosition->length_to_end_;
+
+            } else if (road->id_ == targetPosition->match_road_->id_ &&
+                       road->mesh_id_ == targetPosition->match_road_->mesh_id_) {
+                if (road->direction_ == 3)
+                    length += targetPosition->length_to_end_;
+                else
+                    length += targetPosition->length_to_start_;
+            } else
+                length += road->length_;
+        } else if (conn_type == PathEngine::TAIL_TAIL) {
+            if (road->id_ == sourcePosition->match_road_->id_ &&
+                road->mesh_id_ == sourcePosition->match_road_->mesh_id_) {
+                if (road->direction_ == 3)
+                    length += sourcePosition->length_to_start_;
+                else
+                    length += sourcePosition->length_to_end_;
+
+            } else if (road->id_ == targetPosition->match_road_->id_ &&
+                       road->mesh_id_ == targetPosition->match_road_->mesh_id_) {
+                if (road->direction_ == 3)
+                    length += targetPosition->length_to_end_;
+                else
+                    length += targetPosition->length_to_start_;
+            } else
+                length += road->length_;
+        }  else if (conn_type == PathEngine::HEAD_HEAD) {
+            if (road->id_ == sourcePosition->match_road_->id_ &&
+                road->mesh_id_ == sourcePosition->match_road_->mesh_id_) {
+                if (road->direction_ == 3)
+                    length += sourcePosition->length_to_start_;
+                else
+                    length += sourcePosition->length_to_start_;
+
+            } else if (road->id_ == targetPosition->match_road_->id_ &&
+                       road->mesh_id_ == targetPosition->match_road_->mesh_id_) {
+                if (road->direction_ == 3)
+                    length += targetPosition->length_to_end_;
+                else
+                    length += targetPosition->length_to_start_;
+            } else
+                length += road->length_;
+        } else if (conn_type == PathEngine::HEAD_TAIL) {
+            if (road->id_ == sourcePosition->match_road_->id_ &&
+                road->mesh_id_ == sourcePosition->match_road_->mesh_id_) {
+                if (road->direction_ == 3)
+                    length += sourcePosition->length_to_start_;
+                else
+                    length += sourcePosition->length_to_start_;
+
+            } else if (road->id_ == targetPosition->match_road_->id_ &&
+                       road->mesh_id_ == targetPosition->match_road_->mesh_id_) {
+                if (road->direction_ == 3)
+                    length += targetPosition->length_to_end_;
+                else
+                    length += targetPosition->length_to_start_;
+            } else
+                length += road->length_;
+        }
+
+        road_it = next_it;
+        last_conn_type = conn_type;
     }
+
+//    for (auto road : road_list) {
+//        if (road->id_ == sourcePosition->match_road_->id_ &&
+//                road->mesh_id_ == sourcePosition->match_road_->mesh_id_) {
+//            if (road->direction_ == 3)
+//                length += sourcePosition->length_to_start_;
+//            else
+//                length += sourcePosition->length_to_end_;
+//
+//        } else if (road->id_ == targetPosition->match_road_->id_ &&
+//                   road->mesh_id_ == targetPosition->match_road_->mesh_id_) {
+//            if (road->direction_ == 3)
+//                length += targetPosition->length_to_end_;
+//            else
+//                length += targetPosition->length_to_start_;
+//        } else
+//            length += road->length_;
+//    }
     return length;
 }
