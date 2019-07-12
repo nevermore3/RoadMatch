@@ -74,6 +74,15 @@ class PathEngine {
 public:
     PathEngine();
 
+    enum ConnType {
+        HEAD_HEAD = 0,
+        HEAD_TAIL = 1,
+        TAIL_TAIL = 2,
+        TAIL_HEAD = 3,
+        UN_CONN   = 4
+    };
+
+
     void SetSearchCount(int count);
 
     void SetFunctionClassFilterValid(bool valid);
@@ -90,14 +99,18 @@ public:
                   shared_ptr<KDCoord> des_coord,
                   std::list<shared_ptr<KDRoad>> &result);
 
-    bool IsRoadConnect(MeshManager *mesh_manage,
-                       const shared_ptr<KDRoad> road1,
-                       const shared_ptr<KDRoad> road2);
+    static bool IsRoadConnect(MeshManager *mesh_manage,
+                              shared_ptr<KDRoad> road1,
+                              shared_ptr<KDRoad> road2);
+
+    static ConnType GetConnectType(MeshManager *mesh_manage,
+                                  shared_ptr<KDRoad> road1,
+                                  shared_ptr<KDRoad> road2);
 
 private:
     bool SetSource(MeshManager *mesh_manage, shared_ptr<KDRoad> road_src, shared_ptr<KDRoadNode> node);
 
-    void ExtendPath(MeshManager *mesh_manage, shared_ptr<SearchLink> link_, bool forward);
+    void ExtendPath(MeshManager *mesh_manage, shared_ptr<SearchLink> link, bool forward);
 
     bool Recall(shared_ptr<SearchLink> link_,
                 std::list<shared_ptr<KDRoad>> &result);

@@ -33,13 +33,45 @@ bool DiffController::Differing() {
     std::list<shared_ptr<KDRoad>> result;
     engine.FindPath((MeshManager*)data_manager.base_data_manager_, road_src, src_coord, road_dst, des_coord, result);
 
+    vector<shared_ptr<KDCoord>> coord_list;
+
+    auto road_it = result.begin();
+    auto next_it = road_it;
+    while(road_it != result.end()) {
+        ++next_it;
+
+        PathEngine::ConnType conn_type =
+                PathEngine::GetConnectType((MeshManager*)data_manager.base_data_manager_, (*road_it), (*next_it));
+
+        if(conn_type == PathEngine::UN_CONN)
+            break;
+
+        if(conn_type == PathEngine::TAIL_HEAD) {
+            if (road_it == result.begin()) {
+                coord_list.insert(coord_list.end(), (*road_it)->points_.begin(), (*road_it)->points_.end());
+            }
+            coord_list.insert(coord_list.end(), (*next_it)->points_.begin(), (*next_it)->points_.end());
+        } else if (conn_type == PathEngine::TAIL_TAIL) {
+            if (road_it == result.begin()) {
+                coord_list.insert(coord_list.end(), (*road_it)->points_.begin(), (*road_it)->points_.end());
+            }
+            coord_list.insert(coord_list.end(), (*next_it)->points_.rbegin(), (*next_it)->points_.rend());
+        }  else if (conn_type == PathEngine::HEAD_HEAD) {
+            if (road_it == result.begin()) {
+                coord_list.insert(coord_list.end(), (*road_it)->points_.rbegin(), (*road_it)->points_.rend());
+            }
+            coord_list.insert(coord_list.end(), (*next_it)->points_.begin(), (*next_it)->points_.end());
+        } else if (conn_type == PathEngine::HEAD_TAIL) {
+            if (road_it == result.begin()) {
+                coord_list.insert(coord_list.end(), (*road_it)->points_.rbegin(), (*road_it)->points_.rend());
+            }
+            coord_list.insert(coord_list.end(), (*next_it)->points_.rbegin(), (*next_it)->points_.rend());
+        }
+
+        road_it = next_it;
+    }
+
     cout<<"result: "<<result.size()<<endl;
 
-//    bool FindPath(MeshManage *mesh_manage,
-//                  shared_ptr<KDRoad> road_src,
-//                  shared_ptr<KDCoord> src_coord,
-//                  shared_ptr<KDRoad> road_dst,
-//                  shared_ptr<KDCoord> des_coord,
-//                  std::list<shared_ptr<KDRoad>> &result);
     return true;
 }

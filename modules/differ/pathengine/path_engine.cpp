@@ -305,10 +305,10 @@ bool PathEngine::IsRoadConnect(MeshManager *mesh_manage,
             road1->f_node_id_ == road2->t_node_id_)
             res = true;
     } else {
-        shared_ptr<MeshObj> mesh_obj1 = mesh_manage->GetMesh(road1->mesh_id_);
+        shared_ptr<MeshObj> mesh_obj = mesh_manage->GetMesh(road1->mesh_id_);
 
-        shared_ptr<KDRoadNode> f_node1 = mesh_obj1->road_nodes_[road1->f_node_id_];
-        shared_ptr<KDRoadNode> t_node1 = mesh_obj1->road_nodes_[road1->t_node_id_];
+        shared_ptr<KDRoadNode> f_node1 = mesh_obj->road_nodes_[road1->f_node_id_];
+        shared_ptr<KDRoadNode> t_node1 = mesh_obj->road_nodes_[road1->t_node_id_];
 
         if (f_node1->adj_id_ != -1) {
             if (f_node1->adj_id_ == road2->f_node_id_ ||
@@ -324,4 +324,43 @@ bool PathEngine::IsRoadConnect(MeshManager *mesh_manage,
     }
 
     return res;
+}
+
+PathEngine::ConnType PathEngine::GetConnectType(MeshManager *mesh_manage,
+                               shared_ptr<KDRoad> road1,
+                               shared_ptr<KDRoad> road2) {
+    if (road1->mesh_id_ == road2->mesh_id_) {
+
+        if (road1->t_node_id_ == road2->f_node_id_)
+            return TAIL_HEAD;
+        if (road1->t_node_id_ == road2->t_node_id_)
+            return TAIL_TAIL;
+        if (road1->f_node_id_ == road2->f_node_id_)
+            return HEAD_HEAD;
+        if (road1->f_node_id_ == road2->t_node_id_)
+            return HEAD_TAIL;
+    } else {
+        shared_ptr<MeshObj> mesh_obj = mesh_manage->GetMesh(road1->mesh_id_);
+
+        shared_ptr<KDRoadNode> f_node1 = mesh_obj->road_nodes_[road1->f_node_id_];
+        shared_ptr<KDRoadNode> t_node1 = mesh_obj->road_nodes_[road1->t_node_id_];
+
+        if (f_node1->adj_id_ != -1) {
+            if (f_node1->adj_id_ == road2->f_node_id_)
+                return HEAD_HEAD;
+
+            if (f_node1->adj_id_ == road2->t_node_id_)
+                return HEAD_TAIL;
+        }
+
+        if (t_node1->adj_id_ != -1) {
+            if (t_node1->adj_id_ == road2->f_node_id_ )
+                return TAIL_HEAD;
+
+            if (t_node1->adj_id_ == road2->t_node_id_ )
+                return TAIL_TAIL;
+        }
+    }
+
+    return UN_CONN;
 }
