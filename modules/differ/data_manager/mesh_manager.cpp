@@ -309,8 +309,10 @@ bool MeshObj::LoadAdjNode(string file_name) {
 /////////////////////////////////////////////////////////////////////////////////////
 
 void OutputHighWay(MeshManager * meshManage) {
-    string dbf_file = "/home/liujian/liujian/data/differ/ROAD.dbf";
-    string shp_file = "/home/liujian/liujian/data/differ/ROAD.shp";
+    string output_path = GlobalCache::GetInstance()->out_path();
+
+    string dbf_file = output_path + "/HIGHROAD.dbf";
+    string shp_file = output_path + "/HIGHROAD.shp";
 
     SHPHandle ptrRoadShp_ = nullptr;
     DBFHandle ptrRoadDbf_ = nullptr;
@@ -369,8 +371,10 @@ void OutputHighWay(MeshManager * meshManage) {
 }
 
 void OutputHighNode(MeshManager * meshManage) {
-    string dbf_file = "/home/liujian/liujian/data/differ/NODE.dbf";
-    string shp_file = "/home/liujian/liujian/data/differ/NODE.shp";
+    string output_path = GlobalCache::GetInstance()->out_path();
+
+    string dbf_file = output_path + "/HIGHNODE.dbf";
+    string shp_file = output_path + "/HIGHNODE.shp";
 
     SHPHandle ptrRoadShp_ = nullptr;
     DBFHandle ptrRoadDbf_ = nullptr;
@@ -556,7 +560,6 @@ shared_ptr<KDRoad> MeshManager::GetRoad(string mesh_id, int32_t road_id) {
             return roadit->second;
         }
     }
-
     return nullptr;
 }
 

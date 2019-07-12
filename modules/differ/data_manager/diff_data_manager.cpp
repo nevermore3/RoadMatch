@@ -4,7 +4,7 @@
 
 #include "diff_data_manager.h"
 #include "global_cache.h"
-#include "mesh_manage.h"
+#include "mesh_manager.h"
 #include "geos/geom/Coordinate.h"
 #include "geos/geom/GeometryFactory.h"
 #include "geos/geom/CoordinateSequence.h"
@@ -492,4 +492,27 @@ void DiffDataManager::OutputRoad(const string &filename){
         DBFClose(ptrRoadDbf_);
     }
 
+}
+
+
+shared_ptr<MeshObj> DiffDataManager::GetMesh(const string& mesh_id) {
+    auto meshit = meshs_.find(mesh_id);
+    if (meshit != meshs_.end()) {
+        return meshit->second;
+    }
+
+    return nullptr;
+}
+
+shared_ptr<KDRoad> DiffDataManager::GetRoad(string mesh_id, int32_t road_id) {
+    auto meshit = meshs_.find(mesh_id);
+    if (meshit != meshs_.end()) {
+        shared_ptr<MeshObj> mesh = meshit->second;
+
+        auto roadit = mesh->roads_.find(road_id);
+        if (roadit != mesh->roads_.end()) {
+            return roadit->second;
+        }
+    }
+    return nullptr;
 }

@@ -9,11 +9,13 @@
 #include "data_manager/data_types.h"
 #include "data_manager/data_manager.h"
 #include "data_manager/mesh_manager.h"
+#include "data_manager/diff_data_manager.h"
 #include "pathengine/path_engine.h"
 #include "util/distance.h"
 #include "util/geometry_util.h"
 #include "hmm/bind.h"
 #include "hmm/viterbi.h"
+#include "global_cache.h"
 
 #include "glog/logging.h"
 
@@ -22,6 +24,8 @@ bool DiffController::Differing() {
     DataManager data_manager;
     data_manager.extent_ =  KDExtent(115.384, 117.5, 39.322, 41.2);
     data_manager.base_data_manager_ = MeshManager::GetInstance();
+
+    data_manager.diff_data_manager_ = DiffDataManager::GetInstance();
 
     if(!data_manager.LoadData()) {
         return false;
@@ -158,8 +162,10 @@ bool DiffController::Differing() {
     Viterbi viterbi;
     viterbi.Compute(stepList.step_list_, false, res_list, mesh_manage_);
 
-    ShpOutPut::OutPutLinkList("/home/liujian/liujian/data/differ/path1", result);
-    ShpOutPut::OutPutLinkList("/home/liujian/liujian/data/differ/path2", res_list);
+
+    string output_path = GlobalCache::GetInstance()->out_path();
+    ShpOutPut::OutPutLinkList(output_path + "/path1", result);
+    ShpOutPut::OutPutLinkList(output_path + "/path2", res_list);
 
     return true;
 }
