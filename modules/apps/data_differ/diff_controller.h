@@ -13,9 +13,6 @@ public:
 
 public:
     bool Differing();
-
-
 };
-
 
 #endif //TD_DATA_DIFFER_DIFF_CONTROLLER_H

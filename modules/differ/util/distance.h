@@ -11,12 +11,25 @@
 
 class Distance {
     public:
+        static double SimpleDistance(const shared_ptr<KDCoord>& pt1, const shared_ptr<KDCoord>& pt2);
+        static double SimpleDistance(double x1,double y1,double x2,double y2);
+        static double distance(double lng1,double lat1,double lng2,double lat2);
         static double distance(const shared_ptr<KDCoord> pt1, const shared_ptr<KDCoord> pt2);
 
         static double distance(const shared_ptr<KDCoord> pt,
                                const vector<shared_ptr<KDCoord>>& line,
                                 shared_ptr<KDCoord> pFoot,
                                int32_t* pSeg);
+
+        static double GetDegreeDistance(double meter_dis,double lon,double lat);
+
+        /**
+        * 获取长度，不进行单位转化
+        * @param line
+        * @return
+        */
+        static double GetSimpleLength(const vector<shared_ptr<KDCoord>>& line);
+
 };
 
 #endif //NDS_VIEWER_DISTANCE_H

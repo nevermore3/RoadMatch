@@ -11,6 +11,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <list>
 #include <map>
 #include <unordered_map>
 #include <float.h>
@@ -101,6 +102,8 @@ public:
     int32_t road_type_;
 
     int32_t road_class_;
+
+    int32_t f_class_;
 
     int8_t form_way_;
 

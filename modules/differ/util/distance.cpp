@@ -6,11 +6,6 @@
 
 #include <limits.h>
 
-//const double PI = 3.141592653589793;
-//const double deg2rad = PI / 180.0;
-//const double radius = 6371004.0;
-//#define EARTH_2R			12733467.287768236971495736012709F
-//#define FACTOR_ARC_RAD		57295779.513082320876798154814105F
 const double PI = 3.141592653589793;
 const double deg2rad = PI / 180.0;
 #define EARTH_2R			1273346728.7768236971495736012709F
@@ -18,14 +13,6 @@ const double deg2rad = PI / 180.0;
 
 double GisToolSetGetLonLatDist(long coor1x, long coor1y, long coor2x, long coor2y)
 {
-/*	double dlon = FLTARC2RAD(coor2x - coor1x);
-	double dlat = FLTARC2RAD(coor2y - coor1y);
-	double sindlat2 = PMSin(FDIV(dlat,2.0));
-	double sindlon2 = PMSin(FDIV(dlon,2.0));
-	double a = FADD(FMUL(sindlat2, sindlat2),
-		FMUL(FMUL(PMCos(FLTARC2RAD(coor1y)), PMCos(FLTARC2RAD(coor2y))), FMUL(sindlon2,sindlon2)));
-	return FMUL(EARTH_2R, PMArcSin(FSQRT(a)));
-*/
 	if (coor1x == coor2x && coor1y == coor2y) {
 		return 0;
 	}
@@ -37,7 +24,16 @@ double GisToolSetGetLonLatDist(long coor1x, long coor1y, long coor2x, long coor2
 	double a = sindlat2 * sindlat2 + cos(coor1y / FACTOR_ARC_RAD) * cos(coor2y / FACTOR_ARC_RAD) * sindlon2 * sindlon2;
 	return EARTH_2R * asin(sqrt(a));
 }
-
+double Distance::SimpleDistance(double x1,double y1,double x2,double y2){
+	return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+}
+double Distance::SimpleDistance(const shared_ptr<KDCoord>& pt1, const shared_ptr<KDCoord>& pt2){
+	return sqrt((pt1->lng_ - pt2->lng_) * (pt1->lng_ - pt2->lng_) + (pt1->lat_ - pt2->lat_) * (pt1->lat_ - pt2->lat_));
+}
+double Distance::distance(double lng1,double lat1,double lng2,double lat2){
+	return GisToolSetGetLonLatDist(lng1 * 100000000.0, lat1 * 100000000.0,
+								   lng2 * 100000000.0, lat2 * 100000000.0);
+}
 double Distance::distance(const shared_ptr<KDCoord> pt1, const shared_ptr<KDCoord> pt2) {
 //	double x1 = pt1.get_double_lon();
 //	double y1 = pt1.get_double_lat();
@@ -64,7 +60,7 @@ double Distance::distance(const shared_ptr<KDCoord> pt,
                           shared_ptr<KDCoord> pFoot,
 						  int32_t* pSeg) {
 	double dMinDistance = INT_MAX;
-	int ptNum = line.size();
+	int ptNum = (int)line.size();
 
 	for (int i = 0; i < ptNum - 1; i++) {
 		shared_ptr<KDCoord> a = line[i];
@@ -128,4 +124,16 @@ double Distance::distance(const shared_ptr<KDCoord> pt,
 	}
 
 	return dMinDistance;
+}
+
+double Distance::GetDegreeDistance(double meter_dis,double lon,double lat){
+	static double DIS_PER_DEGREE = 40075020.0 / 360;
+	return meter_dis / DIS_PER_DEGREE;
+}
+double Distance::GetSimpleLength(const vector<shared_ptr<KDCoord>>& line){
+    double dis = 0.0;
+    for (int i = 0; i < line.size() - 1; ++i) {
+        dis += SimpleDistance(line[i],line[i + 1]);
+    }
+    return dis;
 }
