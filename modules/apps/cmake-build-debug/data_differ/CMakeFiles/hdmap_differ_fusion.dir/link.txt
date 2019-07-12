@@ -1,0 +1,1 @@
+/usr/bin/c++  -g  -rdynamic CMakeFiles/hdmap_differ_fusion.dir/diff_controller.o CMakeFiles/hdmap_differ_fusion.dir/main.o  -o hdmap_differ_fusion -lPocoNet -lPocoUtil -lPocoXML -lPocoJSON -lPocoFoundation -lpthread -ldiffer_engine -lglog -lautohdmap_core -lautohdmap_api -lgeos 

@@ -50,7 +50,7 @@ bool DiffDataManager::LoadData(const KDExtent &extent)
         return false;
     }
     BuildBoundry();
-    RemoveNonHighWay();
+    //RemoveNonHighWay();
     string output = GlobalCache::GetInstance()->out_path();
     OutputRoad(output);
     OutputNode(output);
@@ -180,22 +180,17 @@ void DiffDataManager::StringToVector(string str, shared_ptr<KDRoadNode> node, sh
         }
     }
 
-    for (auto i : roads) {
-        if (meshObj->roads_.find(i) == meshObj->roads_.end()) {
-            //remove non-highway
-            continue;
-        }
-
-//        if (find(fromRoad.begin(), fromRoad.end(), meshObj->roads_[i]) == fromRoad.end()) {
-//            fromRoad.push_back(meshObj->roads_[i]);
+//    for (auto i : roads) {
+//        if (meshObj->roads_.find(i) == meshObj->roads_.end()) {
+//            //remove non-highway
+//            continue;
 //        }
-    }
-
-    node->from_roads_ = fromRoad;
-    vector<shared_ptr<KDRoad>> toRoad = fromRoad;
-    node->to_roads_ = toRoad;
+////        if (find(fromRoad.begin(), fromRoad.end(), meshObj->roads_[i]) == fromRoad.end()) {
+////            fromRoad.push_back(meshObj->roads_[i]);
+////        }
+//    }
+    node->from_roads_ = node->to_roads_= fromRoad;
 }
-
 
 
 bool DiffDataManager::LoadNode(string file_name)
@@ -299,7 +294,6 @@ void DiffDataManager::BuildBoundry()
         shared_ptr<KDRoadNode> nodeA = *(codeNode.begin());
         shared_ptr<KDRoadNode> nodeB = *(codeNode.rbegin());
 
-
         nodeA->boundary_ = 1;
         nodeB->boundary_ = 1;
         nodeA->adj_id_ = nodeB->id_;
@@ -320,8 +314,7 @@ void DiffDataManager::BuildBoundry()
 
 void DiffDataManager::RemoveNonHighWay()
 {
-    //unordered_map<int32_t, shared_ptr<KDRoad>> roads_;
-    //unordered_map<int32_t, shared_ptr<KDRoadNode>> road_nodes_;
+
     for (auto mesh : meshs_) {
         shared_ptr<MeshObj> meshObj = mesh.second;
         unordered_map<int32_t, shared_ptr<KDRoadNode>> roadNodes = meshObj->road_nodes_;
@@ -343,7 +336,6 @@ void DiffDataManager::RemoveNonHighWay()
                 nodeIter++;
             }
         }
-
     }
 
 }
@@ -379,9 +371,9 @@ void DiffDataManager::OutputNode(const string &filename)
     DBFAddField(ptrRoadDbf_, "meshID", FTString, 64, 0);
     DBFAddField(ptrRoadDbf_, "from_road", FTString, 64, 0);
     DBFAddField(ptrRoadDbf_, "to_road", FTString, 64, 0);
-    DBFAddField(ptrRoadDbf_, "boundry", FTDouble, 8, 2);
+    DBFAddField(ptrRoadDbf_, "boundry", FTLong, 16, 0);
     DBFAddField(ptrRoadDbf_, "adj_mesh", FTString, 64, 0);
-    DBFAddField(ptrRoadDbf_, "adj_id", FTDouble, 8, 2);
+    DBFAddField(ptrRoadDbf_, "adj_id", FTLong, 16, 0);
 
 
     DiffDataManager *manager = DiffDataManager::GetInstance();
@@ -410,14 +402,13 @@ void DiffDataManager::OutputNode(const string &filename)
             delete[] coords_y;
             delete[] coords_z;
 
-
             DBFWriteLongAttribute(ptrRoadDbf_, nCount, 0, nodeobj->id_);
             DBFWriteStringAttribute(ptrRoadDbf_, nCount, 1, nodeobj->mesh_id_.c_str());
             DBFWriteStringAttribute(ptrRoadDbf_, nCount, 2, VectorToString(nodeobj->from_roads_).c_str());
             DBFWriteStringAttribute(ptrRoadDbf_, nCount, 3, VectorToString(nodeobj->to_roads_).c_str());
-            DBFWriteDoubleAttribute(ptrRoadDbf_, nCount, 4, nodeobj->boundary_);
+            DBFWriteLongAttribute(ptrRoadDbf_, nCount, 4, nodeobj->boundary_);
             DBFWriteStringAttribute(ptrRoadDbf_, nCount, 5, nodeobj->adj_mesh_id_.c_str());
-            DBFWriteDoubleAttribute(ptrRoadDbf_, nCount, 6, nodeobj->adj_id_);
+            DBFWriteLongAttribute(ptrRoadDbf_, nCount, 6, nodeobj->adj_id_);
 
             SHPDestroyObject(shpObj);
         }
