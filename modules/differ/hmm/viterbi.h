@@ -41,7 +41,7 @@ public:
     bool Compute(const list<shared_ptr<CadidatesStep>> &steplist,
                  bool keepMessageHistory,
                  list<shared_ptr<KDRoad>> &res_list,
-                 MeshManager *mesh_manage);
+                 IManager *mesh_manage);
 
     bool InitalProbability(shared_ptr<CadidatesStep> firstTimeStep,
                            unordered_map<shared_ptr<Bind>, double> &probablity);
@@ -53,17 +53,17 @@ private:
     void ForwardStep(shared_ptr<CadidatesStep> prevStep,
                      shared_ptr<CadidatesStep> curStep,
                      const unordered_map<shared_ptr<Bind>, double> &probability,
-                     shared_ptr<ForwardStepResult> forward_result, MeshManager *mesh_manage);
+                     shared_ptr<ForwardStepResult> forward_result, IManager *mesh_manage);
 
     shared_ptr<Bind> MostLikelyState(unordered_map<shared_ptr<Bind>, double> probability);
 
     void RetrieveMostLikelySequence(list<unordered_map<shared_ptr<Bind>, shared_ptr<Bind>>> &backPointerSequence,
                                     shared_ptr<Bind> lastState,
                                     list<shared_ptr<Bind>> &sequence,
-                                    MeshManager *mesh_manage);
+                                    IManager *mesh_manage);
 
     bool BuildFullPath(const list<shared_ptr<Bind>> &road_list,
-                       list<shared_ptr<KDRoad>> &res_list, MeshManager *mesh_manage);
+                       list<shared_ptr<KDRoad>> &res_list, IManager *mesh_manage);
 private:
     unordered_map<string, list<shared_ptr<KDRoad>>> path_map_;
 };

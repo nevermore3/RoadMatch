@@ -8,6 +8,9 @@
 
 #include "data_types.h"
 
+#include "geos/indexQuadtree.h"
+#include "geos/indexStrtree.h"
+
 class MeshObj;
 
 class IManager {
@@ -19,6 +22,9 @@ public:
     virtual shared_ptr<MeshObj> GetMesh(const string& mesh_id) = 0;
 
     virtual shared_ptr<KDRoad> GetRoad(string mesh_id, int32_t road_id) = 0;
+
+public:
+    shared_ptr<STRtree> strtree_;
 };
 
 class DataManager {

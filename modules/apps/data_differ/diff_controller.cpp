@@ -44,7 +44,7 @@ bool DiffController::Differing() {
     PathEngine engine;
     engine.SetSearchCount(5000);
     std::list<shared_ptr<KDRoad>> result;
-    engine.FindPath((MeshManager*)data_manager.base_data_manager_, road_src, src_coord, road_dst, des_coord, result);
+    engine.FindPath(data_manager.base_data_manager_, road_src, src_coord, road_dst, des_coord, result);
 
     vector<shared_ptr<KDCoord>> coord_list;
 
@@ -56,7 +56,7 @@ bool DiffController::Differing() {
             break;
         }
         PathEngine::ConnType conn_type =
-                PathEngine::GetConnectType((MeshManager*)data_manager.base_data_manager_, (*road_it), (*next_it));
+                PathEngine::GetConnectType(data_manager.base_data_manager_, (*road_it), (*next_it));
 
         if(conn_type == PathEngine::UN_CONN)
             break;
@@ -87,7 +87,7 @@ bool DiffController::Differing() {
     }
 
 
-    MeshManager* mesh_manage_ = (MeshManager*)data_manager.base_data_manager_;
+    IManager* mesh_manage_ = data_manager.base_data_manager_;
     list<StepList> all_steps;
     StepList stepList;
     for (size_t index = 0; index < coord_list.size(); index++) {

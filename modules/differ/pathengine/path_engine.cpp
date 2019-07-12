@@ -44,7 +44,7 @@ void PathEngine::SetFunctionClassFilterValid(bool valid){
     fc_valid_ = valid;
 }
 
-bool PathEngine::Init(MeshManager* mesh_manage, shared_ptr<KDRoad> road_src,
+bool PathEngine::Init(IManager* mesh_manage, shared_ptr<KDRoad> road_src,
                       shared_ptr<KDRoad> road_dst) {
     if(nullptr == road_src || nullptr == road_dst || nullptr == mesh_manage)
         return false;
@@ -97,7 +97,7 @@ bool PathEngine::Recall(shared_ptr<SearchLink> current_link, std::list<shared_pt
     return !result.empty();
 }
 
-bool PathEngine::SetSource(MeshManager *mesh_manage, shared_ptr<KDRoad> road_src, shared_ptr<KDRoadNode> node) {
+bool PathEngine::SetSource(IManager *mesh_manage, shared_ptr<KDRoad> road_src, shared_ptr<KDRoadNode> node) {
     shared_ptr<SearchLink> src = make_shared<SearchLink>();
     src->set_length(road_src->length_);
     src->set_kdroad(road_src);
@@ -118,7 +118,7 @@ bool PathEngine::SetSource(MeshManager *mesh_manage, shared_ptr<KDRoad> road_src
     return true;
 }
 
-bool PathEngine::FindPath(MeshManager* mesh_manage,
+bool PathEngine::FindPath(IManager* mesh_manage,
                           shared_ptr<KDRoad> road_src,
                           shared_ptr<KDCoord> src_coord,
                           shared_ptr<KDRoad> road_dst,
@@ -173,7 +173,7 @@ bool PathEngine::FindPath(MeshManager* mesh_manage,
     return res;
 }
 
-bool PathEngine::FindPath(MeshManager* mesh_manage,
+bool PathEngine::FindPath(IManager* mesh_manage,
                           std::list<shared_ptr<KDRoad>>& result) {
     if(nullptr == mesh_manage)
         return false;
@@ -203,7 +203,7 @@ double PathEngine::GetFilterQueryDistance(const KDCoord &node) {
     return min_dis / 100;
 }
 
-void PathEngine::ExtendPath(MeshManager* mesh_manage, shared_ptr<SearchLink> cur_link, bool forward) {
+void PathEngine::ExtendPath(IManager* mesh_manage, shared_ptr<SearchLink> cur_link, bool forward) {
     shared_ptr<KDRoadNode> cur_node_ = cur_link->get_kdnode();
     if (nullptr == cur_node_)
         return;
@@ -291,7 +291,7 @@ void PathEngine::ExtendPath(MeshManager* mesh_manage, shared_ptr<SearchLink> cur
     path_close_map_.insert(std::make_pair(MeshFeatureKeyUtil::BuildKey(cur_link->get_kdroad()), cur_link));
 }
 
-bool PathEngine::IsRoadConnect(MeshManager *mesh_manage,
+bool PathEngine::IsRoadConnect(IManager *mesh_manage,
                                const shared_ptr<KDRoad> road1,
                                const shared_ptr<KDRoad> road2) {
     bool res = false;
@@ -323,7 +323,7 @@ bool PathEngine::IsRoadConnect(MeshManager *mesh_manage,
     return res;
 }
 
-PathEngine::ConnType PathEngine::GetConnectType(MeshManager *mesh_manage,
+PathEngine::ConnType PathEngine::GetConnectType(IManager *mesh_manage,
                                shared_ptr<KDRoad> road1,
                                shared_ptr<KDRoad> road2) {
     if (road1->mesh_id_ == road2->mesh_id_) {

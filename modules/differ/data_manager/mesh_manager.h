@@ -5,22 +5,18 @@
 #ifndef MATCH_CORE_MESH_CACHE_H
 #define MATCH_CORE_MESH_CACHE_H
 
-
-#include "geos/indexQuadtree.h"
-#include "geos/indexStrtree.h"
-#include "geos/geom/LineString.h"
-
-using namespace geos::index::quadtree;
-using namespace geos::geom;
-
-#include "mesh/MeshGridObjectExt.hpp"
-
-using namespace kd::autohdmap;
-
 #include "data_types.h"
 #include "data_manager.h"
 
+#include "geos/geom/LineString.h"
+#include "mesh/MeshGridObjectExt.hpp"
+
 #include <unordered_map>
+
+
+using namespace kd::autohdmap;
+using namespace geos::index::quadtree;
+using namespace geos::geom;
 
 class MeshObj {
 public:
@@ -67,13 +63,6 @@ public:
 
     bool LoadData(const KDExtent &extent);
 
-    bool MeshOutOfRange(const string& mesh_name);
-
-    //获取相邻meshid
-    bool GetAdjMeshNameList (const unordered_map<int32_t, string>& mesh_id_map,
-                             const string& mesh_name,
-                             vector<string>& mesh_list);
-
 protected:
     MeshManager() {
         quadtree_ = make_shared<geos::index::quadtree::Quadtree>();
@@ -86,6 +75,13 @@ private:
 
     int32_t MeshName2MeshID(const string& meshid);
 
+    bool MeshOutOfRange(const string& mesh_name);
+
+    //获取相邻meshid
+    bool GetAdjMeshNameList (const unordered_map<int32_t, string>& mesh_id_map,
+                             const string& mesh_name,
+                             vector<string>& mesh_list);
+
 public:
     unordered_map<string, shared_ptr<MeshObj>> meshs_;
 
@@ -95,9 +91,8 @@ public:
 
     set<string> mesh_set_;
 
-    shared_ptr<STRtree> strtree_;
-
 private:
+    friend class MeshObj;
     const double LONGLAT_RATIO = 3600000.0;
 };
 

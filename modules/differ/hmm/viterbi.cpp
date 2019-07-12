@@ -13,12 +13,12 @@
 #include "util/match_geo_util.h"
 #include "util/mesh_feature_key_util.h"
 
-#define DEBUG_MATCHING 1
+//#define DEBUG_MATCHING
 
 bool Viterbi::Compute(const list<shared_ptr<CadidatesStep>> &steplist,
                       bool keepMessageHistory,
                       list<shared_ptr<KDRoad>> &res_list,
-                      MeshManager *mesh_manage) {
+                      IManager *mesh_manage) {
     if (steplist.empty())
         return false;
 
@@ -100,18 +100,13 @@ bool Viterbi::HmmBreak(unordered_map<shared_ptr<Bind>, double> message) {
 void Viterbi::ForwardStep(shared_ptr<CadidatesStep> prevStep,
                           shared_ptr<CadidatesStep> curStep,
                           const unordered_map<shared_ptr<Bind>, double> &probability_,
-                          shared_ptr<ForwardStepResult> forward_result, MeshManager *mesh_manage) {
+                          shared_ptr<ForwardStepResult> forward_result,
+                          IManager *mesh_manage) {
     for (auto curState : curStep->candidates_) {
         //连通性概率
         double maxLogProbability = DoubleNegInfinity;
         shared_ptr<Bind> maxPrevState;
         //找出之前的step候选项到当前step可能性最大的
-        if(curState->match_road_->mesh_id_ == "J50F005020" && curState->match_road_->id_ == 1495)
-            cout<<"asdfkjas;dlkjf;"<<endl;
-
-        if(curState->match_road_->mesh_id_ == "J50F005020" && curState->match_road_->id_ == 1479)
-            cout<<"asdfkjas;dlkjf;"<<endl;
-
         for (auto prevState : prevStep->candidates_) {
             double logProbability = HmmProbability::TransitionLogProbability(prevState,
                                                                              curState, path_map_, mesh_manage);
@@ -162,7 +157,7 @@ shared_ptr<Bind> Viterbi::MostLikelyState(unordered_map<shared_ptr<Bind>, double
 void Viterbi::RetrieveMostLikelySequence(list<unordered_map<shared_ptr<Bind>, shared_ptr<Bind>>> &backPointerSequence,
                                          shared_ptr<Bind> lastState,
                                          list<shared_ptr<Bind>> &sequence,
-                                         MeshManager *mesh_manage) {
+                                         IManager *mesh_manage) {
     sequence.emplace_back(lastState);
     int cnt = 0;
     backPointerSequence.reverse();
@@ -193,7 +188,8 @@ void Viterbi::RetrieveMostLikelySequence(list<unordered_map<shared_ptr<Bind>, sh
 }
 
 bool Viterbi::BuildFullPath(const list<shared_ptr<Bind>> &bind_list,
-                            list<shared_ptr<KDRoad>> &res_list, MeshManager *mesh_manage) {
+                            list<shared_ptr<KDRoad>> &res_list,
+                            IManager *mesh_manage) {
     PathEngine engine;
     auto bind_it = bind_list.begin();
     while (bind_it != bind_list.end()) {

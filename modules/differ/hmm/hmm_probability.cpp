@@ -28,7 +28,7 @@ double HmmProbability::EmissionLogProbability(shared_ptr<Bind> roadPosition) {
 double HmmProbability::TransitionLogProbability(shared_ptr<Bind> sourcePosition,
                                                 shared_ptr<Bind> targetPosition,
                                                 unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
-                                                MeshManager *meshManage) {
+                                                IManager *meshManage) {
     double transitionMetric = NormalizedTransitionMetric(sourcePosition,
                                                          targetPosition,
                                                          path_map,meshManage);
@@ -44,7 +44,7 @@ double HmmProbability::TransitionLogProbability(shared_ptr<Bind> sourcePosition,
 double HmmProbability::NormalizedTransitionMetric(shared_ptr<Bind> sourcePosition,
                                                   shared_ptr<Bind> targetPosition,
                                                   unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
-                                                  MeshManager *meshManage) {
+                                                  IManager *meshManage) {
     double time_diff = 1;  // to be re set
 
     double linear_distance = linearDistance(sourcePosition->query_point_,targetPosition->query_point_);
@@ -62,7 +62,7 @@ double HmmProbability::NormalizedTransitionMetric(shared_ptr<Bind> sourcePositio
 double HmmProbability::GetRoutelength(shared_ptr<Bind> sourcePosition,
                                       shared_ptr<Bind> targetPosition,
                                       unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
-                                      MeshManager *meshManage) {
+                                      IManager *meshManage) {
     shared_ptr<KDRoad> source = sourcePosition->match_road_;
     shared_ptr<KDRoad> target = targetPosition->match_road_;
     //同一条link的处理
@@ -119,7 +119,7 @@ string HmmProbability::GetPathKey(shared_ptr<Bind> sourcePosition,
 double HmmProbability::BuilePathLength(const list<shared_ptr<KDRoad>>& road_list,
                                        shared_ptr<Bind> sourcePosition,
                                        shared_ptr<Bind> targetPosition,
-                                       MeshManager *meshManage) {
+                                       IManager *meshManage) {
     double length = 0;
 
     auto road_it = road_list.begin();

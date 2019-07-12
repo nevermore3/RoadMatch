@@ -6,7 +6,7 @@
 #define ROAD_MATCH_SERVICE_HMMPROBABILITY_H
 
 #include "bind.h"
-class MeshManager;
+class IManager;
 
 class HmmProbability {
 public:
@@ -14,15 +14,18 @@ public:
 
     static double TransitionLogProbability(shared_ptr<Bind> sourcePosition,
                                            shared_ptr<Bind> targetPosition,
-                                           unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,MeshManager *meshManage);
+                                           unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
+                                           IManager *meshManage);
 private:
     static double NormalizedTransitionMetric(shared_ptr<Bind> sourcePosition,
                                              shared_ptr<Bind> targetPosition,
-                                             unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,MeshManager *meshManage);
+                                             unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
+                                             IManager *meshManage);
 
     static double GetRoutelength(shared_ptr<Bind> sourcePosition,
                                  shared_ptr<Bind> targetPosition,
-                                 unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,MeshManager *meshManage);
+                                 unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
+                                 IManager *meshManage);
 
     static string GetPathKey(shared_ptr<Bind> sourcePosition,
                              shared_ptr<Bind> targetPosition);
@@ -30,7 +33,7 @@ private:
     static double BuilePathLength(const list<shared_ptr<KDRoad>>& road_list,
                            shared_ptr<Bind> sourcePosition,
                            shared_ptr<Bind> targetPosition,
-                           MeshManager *meshManage);
+                           IManager *meshManage);
 };
 
 
