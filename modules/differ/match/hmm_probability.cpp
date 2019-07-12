@@ -4,7 +4,7 @@
 
 #include "hmm_probability.h"
 #include "geom/geo_util.h"
-#include "data_manager/mesh_manage.h"
+#include "data_manager/mesh_manager.h"
 #include "pathengine/path_engine.h"
 
 #define measurementErrorSigma 20.0
@@ -33,7 +33,8 @@ double HmmProbability::EmissionLogProbability(shared_ptr<Bind> roadPosition) {
 
 double HmmProbability::TransitionLogProbability(shared_ptr<Bind> sourcePosition,
                                                 shared_ptr<Bind> targetPosition,
-                                                unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,MeshManage *meshManage) {
+                                                unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
+                                                MeshManager *meshManage) {
     double transitionMetric = NormalizedTransitionMetric(sourcePosition,
                                                          targetPosition,
                                                          path_map,meshManage);
@@ -48,7 +49,8 @@ double HmmProbability::TransitionLogProbability(shared_ptr<Bind> sourcePosition,
 
 double HmmProbability::NormalizedTransitionMetric(shared_ptr<Bind> sourcePosition,
                                                   shared_ptr<Bind> targetPosition,
-                                                  unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,MeshManage *meshManage) {
+                                                  unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
+                                                  MeshManager *meshManage) {
     double time_diff = 1;  // to be re set
 
     double linear_distance = linearDistance(sourcePosition->query_point_,targetPosition->query_point_);
@@ -65,7 +67,8 @@ double HmmProbability::NormalizedTransitionMetric(shared_ptr<Bind> sourcePositio
 
 double HmmProbability::GetRoutelength(shared_ptr<Bind> sourcePosition,
                                       shared_ptr<Bind> targetPosition,
-                                      unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,MeshManage *meshManage) {
+                                      unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
+                                      MeshManager *meshManage) {
     shared_ptr<KDRoad> source = sourcePosition->match_road_;
     shared_ptr<KDRoad> target = targetPosition->match_road_;
     //同一条link的处理

@@ -6,14 +6,14 @@
 
 #include "data_manager/data_types.h"
 #include "data_manager/data_manager.h"
-#include "data_manager/mesh_manage.h"
+#include "data_manager/mesh_manager.h"
 
 #include "pathengine/path_engine.h"
 
 bool DiffController::Differing() {
     DataManager data_manager;
     data_manager.extent_ =  KDExtent(115.384, 117.5, 39.322, 41.2);
-    data_manager.base_data_manager_ = MeshManage::GetInstance();
+    data_manager.base_data_manager_ = MeshManager::GetInstance();
 
     if(!data_manager.LoadData()) {
         return false;
@@ -31,7 +31,7 @@ bool DiffController::Differing() {
 
     PathEngine engine;
     std::list<shared_ptr<KDRoad>> result;
-    engine.FindPath((MeshManage*)data_manager.base_data_manager_, road_src, src_coord, road_dst, des_coord, result);
+    engine.FindPath((MeshManager*)data_manager.base_data_manager_, road_src, src_coord, road_dst, des_coord, result);
 
     cout<<"result: "<<result.size()<<endl;
 

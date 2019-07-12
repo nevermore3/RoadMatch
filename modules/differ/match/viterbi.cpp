@@ -18,7 +18,7 @@
 bool Viterbi::Compute(const list<shared_ptr<CadidatesStep>> &steplist,
                       bool keepMessageHistory,
                       list<shared_ptr<KDRoad>> &res_list,
-                      MeshManage *mesh_manage) {
+                      MeshManager *mesh_manage) {
     if (steplist.empty())
         return false;
 
@@ -100,7 +100,7 @@ bool Viterbi::HmmBreak(unordered_map<shared_ptr<Bind>, double> message) {
 void Viterbi::ForwardStep(shared_ptr<CadidatesStep> prevStep,
                           shared_ptr<CadidatesStep> curStep,
                           const unordered_map<shared_ptr<Bind>, double> &probability_,
-                          shared_ptr<ForwardStepResult> forward_result, MeshManage *mesh_manage) {
+                          shared_ptr<ForwardStepResult> forward_result, MeshManager *mesh_manage) {
     for (auto curState : curStep->candidates_) {
         //连通性概率
         double maxLogProbability = DoubleNegInfinity;
@@ -156,7 +156,7 @@ shared_ptr<Bind> Viterbi::MostLikelyState(unordered_map<shared_ptr<Bind>, double
 void Viterbi::RetrieveMostLikelySequence(list<unordered_map<shared_ptr<Bind>, shared_ptr<Bind>>> &backPointerSequence,
                                          shared_ptr<Bind> lastState,
                                          list<shared_ptr<Bind>> &sequence,
-                                         MeshManage *mesh_manage) {
+                                         MeshManager *mesh_manage) {
     sequence.emplace_back(lastState);
     int cnt = 0;
     backPointerSequence.reverse();
@@ -187,7 +187,7 @@ void Viterbi::RetrieveMostLikelySequence(list<unordered_map<shared_ptr<Bind>, sh
 }
 
 bool Viterbi::BuildFullPath(const list<shared_ptr<Bind>> &bind_list,
-                            list<shared_ptr<KDRoad>> &res_list, MeshManage *mesh_manage) {
+                            list<shared_ptr<KDRoad>> &res_list, MeshManager *mesh_manage) {
     PathEngine engine;
     auto bind_it = bind_list.begin();
     while (bind_it != bind_list.end()) {
@@ -197,7 +197,7 @@ bool Viterbi::BuildFullPath(const list<shared_ptr<Bind>> &bind_list,
             break;
 //        res_list.emplace_back(band1->match_road_);
         shared_ptr<Bind> band2 = *bind_it;
-        if (engine.IsRoadConnect(band1->match_road_, band2->match_road_, mesh_manage)) {
+        if (engine.IsRoadConnect(mesh_manage, band1->match_road_, band2->match_road_)) {
             res_list.emplace_back(band1->match_road_);
         } else {
             std::list<shared_ptr<KDRoad>> sub_list;

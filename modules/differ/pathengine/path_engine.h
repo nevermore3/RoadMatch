@@ -6,7 +6,7 @@
 #define ROAD_MATCH_SERVICE_PATH_ENGINE_H
 
 #include "data_manager/data_types.h"
-#include "data_manager/mesh_manage.h"
+#include "data_manager/mesh_manager.h"
 
 #include <list>
 #include <queue>
@@ -78,23 +78,26 @@ public:
 
     void SetFunctionClassFilterValid(bool valid);
 
-    bool Init(MeshManage *mesh_manage, shared_ptr<KDRoad> road_src,
+    bool Init(MeshManager *mesh_manage, shared_ptr<KDRoad> road_src,
               shared_ptr<KDRoad> road_dst);
 
-    bool FindPath(MeshManage *mesh_manage, std::list<shared_ptr<KDRoad>> &result);
+    bool FindPath(MeshManager *mesh_manage, std::list<shared_ptr<KDRoad>> &result);
 
-    bool FindPath(MeshManage *mesh_manage,
+    bool FindPath(MeshManager *mesh_manage,
                   shared_ptr<KDRoad> road_src,
                   shared_ptr<KDCoord> src_coord,
                   shared_ptr<KDRoad> road_dst,
                   shared_ptr<KDCoord> des_coord,
                   std::list<shared_ptr<KDRoad>> &result);
 
-    bool IsRoadConnect(shared_ptr<KDRoad> road1,
-                       shared_ptr<KDRoad> road2, MeshManage *mesh_manage);
+    bool IsRoadConnect(MeshManager *mesh_manage,
+                       const shared_ptr<KDRoad> road1,
+                       const shared_ptr<KDRoad> road2);
 
 private:
-    void ExtendPath(MeshManage *mesh_manage, shared_ptr<SearchLink> link_, bool forward);
+    bool SetSource(MeshManager *mesh_manage, shared_ptr<KDRoad> road_src, shared_ptr<KDRoadNode> node);
+
+    void ExtendPath(MeshManager *mesh_manage, shared_ptr<SearchLink> link_, bool forward);
 
     bool Recall(shared_ptr<SearchLink> link_,
                 std::list<shared_ptr<KDRoad>> &result);

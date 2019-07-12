@@ -51,11 +51,11 @@ private:
     const double LONGLAT_RATIO = 3600.0;
 };
 
-class MeshManage : public IManager {
+class MeshManager : public IManager {
 
 public:
-    static MeshManage *GetInstance() {
-        static MeshManage instance_;
+    static MeshManager *GetInstance() {
+        static MeshManager instance_;
         return &instance_;
     }
 
@@ -75,7 +75,7 @@ public:
                              vector<string>& mesh_list);
 
 protected:
-    MeshManage() {
+    MeshManager() {
         quadtree_ = make_shared<geos::index::quadtree::Quadtree>();
         strtree_ = make_shared<geos::index::strtree::STRtree>();
 

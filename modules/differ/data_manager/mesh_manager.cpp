@@ -2,7 +2,7 @@
 // Created by gaoyanhong on 2018/12/10.
 //
 
-#include "mesh_manage.h"
+#include "mesh_manager.h"
 
 #include "geos/geom/Coordinate.h"
 #include "geos/geom/GeometryFactory.h"
@@ -34,7 +34,7 @@ bool MeshObj::LoadMesh(const string &mesh_id, const string &mesh_path, shared_pt
 
     //cout << "[Debug] Load mesh begin, mesh id " << mesh_id << endl;
     mesh_id_ = mesh_id;
-    MeshManage * meshManage = MeshManage::GetInstance();
+    MeshManager * meshManage = MeshManager::GetInstance();
     vector<string> adj_mesh_list;
     if (meshManage->GetAdjMeshNameList(meshManage->mesh_id_map_,
                                        mesh_id, adj_mesh_list)) {
@@ -108,8 +108,8 @@ bool MeshObj::LoadRoad(string file_name, shared_ptr<STRtree> quadtree) {
 //        if (road->road_class_ >= 47000 && road->road_class_ != 51000 && road->form_way_ != 2  && road->road_class_ != 52000)
 //            continue;
 
-        if (road->road_class_ != 41000)
-            continue;
+//        if (road->road_class_ != 41000)
+//            continue;
 
         //read road geometry
         int vertex_nums = shpObject->nVertices;
@@ -308,7 +308,7 @@ bool MeshObj::LoadAdjNode(string file_name) {
 // meshmanage
 /////////////////////////////////////////////////////////////////////////////////////
 
-void OutputHighWay(MeshManage * meshManage) {
+void OutputHighWay(MeshManager * meshManage) {
     string dbf_file = "/home/liujian/liujian/data/differ/ROAD.dbf";
     string shp_file = "/home/liujian/liujian/data/differ/ROAD.shp";
 
@@ -368,7 +368,7 @@ void OutputHighWay(MeshManage * meshManage) {
     }
 }
 
-void OutputHighNode(MeshManage * meshManage) {
+void OutputHighNode(MeshManager * meshManage) {
     string dbf_file = "/home/liujian/liujian/data/differ/NODE.dbf";
     string shp_file = "/home/liujian/liujian/data/differ/NODE.shp";
 
@@ -459,7 +459,7 @@ void OutputHighNode(MeshManage * meshManage) {
     }
 }
 
-bool MeshManage::LoadData(const KDExtent &extent) {
+bool MeshManager::LoadData(const KDExtent &extent) {
     int xmin = (int) (extent.xmin_ * LONGLAT_RATIO);
     int xmax = (int) (extent.xmax_ * LONGLAT_RATIO);
     int ymin = (int) (extent.ymin_ * LONGLAT_RATIO);
@@ -510,8 +510,6 @@ bool MeshManage::LoadData(const KDExtent &extent) {
         roadcnt += mesh_it.second->roads_.size();
     }
 
-    cout<<"    roadcnt = "<<roadcnt<<endl;
-
     int meshCount = dim.width * dim.height;
     LOG(INFO) << "Prepare mesh count " << meshCount;
     OutputHighWay(this);
@@ -520,11 +518,11 @@ bool MeshManage::LoadData(const KDExtent &extent) {
 
 }
 
-bool MeshManage::MeshOutOfRange(const string& mesh_name) {
+bool MeshManager::MeshOutOfRange(const string& mesh_name) {
      return mesh_set_.find(mesh_name) == mesh_set_.end();
 }
 
-shared_ptr<MeshObj> MeshManage::GetMesh(const KDExtent &extent) {
+shared_ptr<MeshObj> MeshManager::GetMesh(const KDExtent &extent) {
     int centx = (int) (extent.CenterX() * LONGLAT_RATIO);
     int centy = (int) (extent.CenterY() * LONGLAT_RATIO);
 
@@ -539,7 +537,7 @@ shared_ptr<MeshObj> MeshManage::GetMesh(const KDExtent &extent) {
     return nullptr;
 }
 
-shared_ptr<MeshObj> MeshManage::GetMesh(const string& mesh_id) {
+shared_ptr<MeshObj> MeshManager::GetMesh(const string& mesh_id) {
     auto meshit = meshs_.find(mesh_id);
     if (meshit != meshs_.end()) {
         return meshit->second;
@@ -548,7 +546,7 @@ shared_ptr<MeshObj> MeshManage::GetMesh(const string& mesh_id) {
     return nullptr;
 }
 
-shared_ptr<KDRoad> MeshManage::GetRoad(string mesh_id, int32_t road_id) {
+shared_ptr<KDRoad> MeshManager::GetRoad(string mesh_id, int32_t road_id) {
     auto meshit = meshs_.find(mesh_id);
     if (meshit != meshs_.end()) {
         shared_ptr<MeshObj> mesh = meshit->second;
@@ -562,13 +560,13 @@ shared_ptr<KDRoad> MeshManage::GetRoad(string mesh_id, int32_t road_id) {
     return nullptr;
 }
 
-string MeshManage::GetMeshFullPath(const string &meshId) {
+string MeshManager::GetMeshFullPath(const string &meshId) {
     string mesh_data_path = GlobalCache::GetInstance()->mesh_data_path();
     string roadFile = mesh_data_path + "/" + meshId + "/";
     return roadFile;
 }
 
-bool MeshManage::GetAdjMeshNameList (const unordered_map<int32_t, string>& mesh_id_map,
+bool MeshManager::GetAdjMeshNameList (const unordered_map<int32_t, string>& mesh_id_map,
                                    const string& mesh_name,
                                    vector<string>& mesh_list) {
     int32_t meshid = MeshName2MeshID(mesh_name);
@@ -602,7 +600,7 @@ bool MeshManage::GetAdjMeshNameList (const unordered_map<int32_t, string>& mesh_
     return !mesh_list.empty();
 }
 
-int32_t MeshManage::MeshName2MeshID(const string& meshid) {
+int32_t MeshManager::MeshName2MeshID(const string& meshid) {
     if(meshid.length() != 10){
         printf("meshid format error!");
         return 0;

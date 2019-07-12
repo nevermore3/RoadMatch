@@ -44,7 +44,7 @@ void PathEngine::SetFunctionClassFilterValid(bool valid){
     fc_valid_ = valid;
 }
 
-bool PathEngine::Init(MeshManage* mesh_manage, shared_ptr<KDRoad> road_src,
+bool PathEngine::Init(MeshManager* mesh_manage, shared_ptr<KDRoad> road_src,
                       shared_ptr<KDRoad> road_dst) {
     if(nullptr == road_src || nullptr == road_dst || nullptr == mesh_manage)
         return false;
@@ -53,75 +53,26 @@ bool PathEngine::Init(MeshManage* mesh_manage, shared_ptr<KDRoad> road_src,
     src_link_ = road_src;
 
     if (0 == road_src->direction_ || 1 == road_src->direction_) {
-        shared_ptr<SearchLink> src1 = make_shared<SearchLink>();
-        src1->set_length(road_src->length_);
-        src1->set_kdroad(road_src);
         shared_ptr<KDRoadNode> node1 = mesh_manage->GetMesh(road_src->mesh_id_)->road_nodes_[road_src->f_node_id_];
-        if (node1->adj_id_ != -1) {
-            shared_ptr<MeshObj> adjmesh = mesh_manage->GetMesh(node1->adj_mesh_id_);
-            node1 = adjmesh->road_nodes_[node1->adj_id_];
-        }
-        int32_t weight = road_src->length_ +
-                         (int32_t)geo::geo_util::getDistance(node1->coord_.lng_, node1->coord_.lat_,
-                                                             des_coord_->lng_,des_coord_->lat_) * ASTAR;
-        src1->set_weight(weight);
-        src1->set_kdnode(node1);
-        path_heap_.push(src1);
+        if(!SetSource(mesh_manage, road_src, node1))
+            return false;
 
-
-        shared_ptr<SearchLink> src2 = make_shared<SearchLink>();
-        src2->set_length(road_src->length_);
-        src2->set_kdroad(road_src);
         shared_ptr<KDRoadNode> node2 = mesh_manage->GetMesh(road_src->mesh_id_)->road_nodes_[road_src->t_node_id_];
-        if (node2->adj_id_ != -1) {
-            shared_ptr<MeshObj> adjmesh = mesh_manage->GetMesh(node2->adj_mesh_id_);
-            node2 = adjmesh->road_nodes_[node2->adj_id_];
-        }
-        weight = road_src->length_ +
-                 (int32_t)geo::geo_util::getDistance(node2->coord_.lng_, node2->coord_.lat_,
-                                                     des_coord_->lng_,des_coord_->lat_) * ASTAR;
-        src2->set_weight(weight);
-
-        src2->set_kdnode(node2);
-
-        path_heap_.push(src2);
+        if(!SetSource(mesh_manage, road_src, node2))
+            return false;
     }
 
     if (2 == road_src->direction_) {
-        shared_ptr<SearchLink> src = make_shared<SearchLink>();
-        src->set_length(road_src->length_);
-        src->set_kdroad(road_src);
         shared_ptr<KDRoadNode> node = mesh_manage->GetMesh(road_src->mesh_id_)->road_nodes_[road_src->t_node_id_];
-        if (node->adj_id_ != -1) {
-            shared_ptr<MeshObj> adjmesh = mesh_manage->GetMesh(node->adj_mesh_id_);
-            node = adjmesh->road_nodes_[node->adj_id_];
-        }
-        int32_t weight = road_src->length_ +
-                         (int32_t)geo::geo_util::getDistance(node->coord_.lng_, node->coord_.lat_,
-                                                             des_coord_->lng_,des_coord_->lat_) * ASTAR;
-        src->set_weight(weight);
-        src->set_kdnode(node);
-        path_heap_.push(src);
+        if(!SetSource(mesh_manage, road_src, node))
+            return false;
     }
 
     if (3 == road_src->direction_) {
-        shared_ptr<SearchLink> src = make_shared<SearchLink>();
-        src->set_length(road_src->length_);
-        src->set_kdroad(road_src);
         shared_ptr<KDRoadNode> node = mesh_manage->GetMesh(road_src->mesh_id_)->road_nodes_[road_src->f_node_id_];
-        if (node->adj_id_ != -1) {
-            shared_ptr<MeshObj> adjmesh = mesh_manage->GetMesh(node->adj_mesh_id_);
-            node = adjmesh->road_nodes_[node->adj_id_];
-        }
-        int32_t weight = road_src->length_ +
-                         (int32_t)geo::geo_util::getDistance(node->coord_.lng_, node->coord_.lat_,
-                                                             des_coord_->lng_,des_coord_->lat_) * ASTAR;
-        src->set_weight(weight);
-        src->set_kdnode(node);
-        path_heap_.push(src);
+        if(!SetSource(mesh_manage, road_src, node))
+            return false;
     }
-
-    match_link_ = nullptr;
 
     return true;
 }
@@ -149,7 +100,28 @@ bool PathEngine::Recall(shared_ptr<SearchLink> current_link, std::list<shared_pt
     return !result.empty();
 }
 
-bool PathEngine::FindPath(MeshManage* mesh_manage,
+bool PathEngine::SetSource(MeshManager *mesh_manage, shared_ptr<KDRoad> road_src, shared_ptr<KDRoadNode> node) {
+    shared_ptr<SearchLink> src = make_shared<SearchLink>();
+    src->set_length(road_src->length_);
+    src->set_kdroad(road_src);
+
+    if (node->adj_id_ != -1) {
+        shared_ptr<MeshObj> adjmesh = mesh_manage->GetMesh(node->adj_mesh_id_);
+        node = adjmesh->road_nodes_[node->adj_id_];
+        if(node == nullptr)
+            return false;
+    }
+    int32_t weight = road_src->length_ +
+                     (int32_t)geo::geo_util::getDistance(node->coord_.lng_, node->coord_.lat_,
+                                                         des_coord_->lng_,des_coord_->lat_) * ASTAR;
+    src->set_weight(weight);
+    src->set_kdnode(node);
+    path_heap_.push(src);
+
+    return true;
+}
+
+bool PathEngine::FindPath(MeshManager* mesh_manage,
                           shared_ptr<KDRoad> road_src,
                           shared_ptr<KDCoord> src_coord,
                           shared_ptr<KDRoad> road_dst,
@@ -164,82 +136,25 @@ bool PathEngine::FindPath(MeshManage* mesh_manage,
     des_coord_ = des_coord;
 
     if (0 == road_src->direction_ || 1 == road_src->direction_) {
-        shared_ptr<SearchLink> src1 = make_shared<SearchLink>();
-        src1->set_length(road_src->length_);
-        src1->set_kdroad(road_src);
         shared_ptr<KDRoadNode> node1 = mesh_manage->GetMesh(road_src->mesh_id_)->road_nodes_[road_src->f_node_id_];
-        if (node1->adj_id_ != -1) {
-            shared_ptr<MeshObj> adjmesh = mesh_manage->GetMesh(node1->adj_mesh_id_);
-            node1 = adjmesh->road_nodes_[node1->adj_id_];
-            if(node1 == nullptr)
-                return false;
-        }
-        int32_t weight = road_src->length_ +
-                         (int32_t)geo::geo_util::getDistance(node1->coord_.lng_, node1->coord_.lat_,
-                                                             des_coord_->lng_,des_coord_->lat_) * ASTAR;
-        src1->set_weight(weight);
-        src1->set_kdnode(node1);
-        path_heap_.push(src1);
+        if(!SetSource(mesh_manage, road_src, node1))
+            return false;
 
-
-        shared_ptr<SearchLink> src2 = make_shared<SearchLink>();
-        src2->set_length(road_src->length_);
-        src2->set_kdroad(road_src);
         shared_ptr<KDRoadNode> node2 = mesh_manage->GetMesh(road_src->mesh_id_)->road_nodes_[road_src->t_node_id_];
-        if (node2->adj_id_ != -1) {
-            shared_ptr<MeshObj> adjmesh = mesh_manage->GetMesh(node2->adj_mesh_id_);
-            node2 = adjmesh->road_nodes_[node2->adj_id_];
-            if(node2 == nullptr)
-                return false;
-        }
-        weight = road_src->length_ +
-                 (int32_t)geo::geo_util::getDistance(node2->coord_.lng_, node2->coord_.lat_,
-                                                     des_coord_->lng_,des_coord_->lat_) * ASTAR;
-        src2->set_weight(weight);
-
-        src2->set_kdnode(node2);
-
-        path_heap_.push(src2);
+        if(!SetSource(mesh_manage, road_src, node2))
+            return false;
     }
 
     if (2 == road_src->direction_) {
-        shared_ptr<SearchLink> src = make_shared<SearchLink>();
-        src->set_length(road_src->length_);
-        src->set_kdroad(road_src);
         shared_ptr<KDRoadNode> node = mesh_manage->GetMesh(road_src->mesh_id_)->road_nodes_[road_src->t_node_id_];
-        if (node->adj_id_ != -1) {
-            shared_ptr<MeshObj> adjmesh = mesh_manage->GetMesh(node->adj_mesh_id_);
-            node = adjmesh->road_nodes_[node->adj_id_];
-
-            if(node == nullptr)
-                return false;
-        }
-        int32_t weight = road_src->length_ +
-                         (int32_t)geo::geo_util::getDistance(node->coord_.lng_, node->coord_.lat_,
-                                                             des_coord_->lng_,des_coord_->lat_) * ASTAR;
-        src->set_weight(weight);
-        src->set_kdnode(node);
-        path_heap_.push(src);
+        if(!SetSource(mesh_manage, road_src, node))
+            return false;
     }
 
     if (3 == road_src->direction_) {
-        shared_ptr<SearchLink> src = make_shared<SearchLink>();
-        src->set_length(road_src->length_);
-        src->set_kdroad(road_src);
         shared_ptr<KDRoadNode> node = mesh_manage->GetMesh(road_src->mesh_id_)->road_nodes_[road_src->f_node_id_];
-        if (node->adj_id_ != -1) {
-            shared_ptr<MeshObj> adjmesh = mesh_manage->GetMesh(node->adj_mesh_id_);
-            node = adjmesh->road_nodes_[node->adj_id_];
-            if(node == nullptr)
-                return false;
-        }
-        int32_t weight = road_src->length_ +
-                         (int32_t)geo::geo_util::getDistance(node->coord_.lng_, node->coord_.lat_,
-                                                             des_coord_->lng_,des_coord_->lat_) * ASTAR;
-
-        src->set_weight(weight);
-        src->set_kdnode(node);
-        path_heap_.push(src);
+        if(!SetSource(mesh_manage, road_src, node))
+            return false;
     }
 
     bool res = false;
@@ -249,13 +164,8 @@ bool PathEngine::FindPath(MeshManage* mesh_manage,
         path_heap_.pop();
         if(current_link->get_kdroad()->id_ == des_link_->id_
            && current_link->get_kdroad()->mesh_id_ == des_link_->mesh_id_ ) {
-            if (Recall( current_link, result)) {
-                res = true;
-                break;
-            } else {
-                res = false;
-                break;
-            }
+            res = Recall( current_link, result);
+            break;
         }
         ExtendPath(mesh_manage, current_link, true);
 
@@ -266,7 +176,7 @@ bool PathEngine::FindPath(MeshManage* mesh_manage,
     return res;
 }
 
-bool PathEngine::FindPath(MeshManage* mesh_manage,
+bool PathEngine::FindPath(MeshManager* mesh_manage,
                           std::list<shared_ptr<KDRoad>>& result) {
     if(nullptr == mesh_manage)
         return false;
@@ -278,13 +188,8 @@ bool PathEngine::FindPath(MeshManage* mesh_manage,
 
         if(current_link->get_kdroad()->id_ == des_link_->id_
            && current_link->get_kdroad()->mesh_id_ == des_link_->mesh_id_) {
-            if (Recall( current_link, result)) {
-                res = true;
-                break;
-            } else {
-                res = false;
-                break;
-            }
+            res = Recall( current_link, result);
+            break;
         }
 
         ExtendPath(mesh_manage, current_link, true);
@@ -301,7 +206,7 @@ double PathEngine::GetFilterQueryDistance(const KDCoord &node) {
     return min_dis / 100;
 }
 
-void PathEngine::ExtendPath(MeshManage* mesh_manage, shared_ptr<SearchLink> cur_link, bool forward) {
+void PathEngine::ExtendPath(MeshManager* mesh_manage, shared_ptr<SearchLink> cur_link, bool forward) {
     shared_ptr<KDRoadNode> cur_node_ = cur_link->get_kdnode();
     if (nullptr == cur_node_)
         return;
@@ -387,11 +292,11 @@ void PathEngine::ExtendPath(MeshManage* mesh_manage, shared_ptr<SearchLink> cur_
     }
 
     path_close_map_.insert(std::make_pair(MeshFeatureKeyUtil::BuildKey(cur_link->get_kdroad()), cur_link));
-
 }
 
-bool PathEngine::IsRoadConnect(shared_ptr<KDRoad> road1,
-                               shared_ptr<KDRoad> road2,MeshManage *mesh_manage) {
+bool PathEngine::IsRoadConnect(MeshManager *mesh_manage,
+                               const shared_ptr<KDRoad> road1,
+                               const shared_ptr<KDRoad> road2) {
     bool res = false;
     if (road1->mesh_id_ == road2->mesh_id_) {
         if (road1->t_node_id_ == road2->f_node_id_ ||
