@@ -79,7 +79,7 @@ protected:
         quadtree_ = make_shared<geos::index::quadtree::Quadtree>();
         strtree_ = make_shared<geos::index::strtree::STRtree>();
 
-    };
+    }
 
 private:
     string GetMeshFullPath(const string &meshId);
