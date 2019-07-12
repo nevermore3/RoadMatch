@@ -512,8 +512,8 @@ bool MeshManager::LoadData(const KDExtent &extent) {
 
     int meshCount = dim.width * dim.height;
     LOG(INFO) << "Prepare mesh count " << meshCount;
-    OutputHighWay(this);
-    OutputHighNode(this);
+//    OutputHighWay(this);
+//    OutputHighNode(this);
     return true;
 
 }

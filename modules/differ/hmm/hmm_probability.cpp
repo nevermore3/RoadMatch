@@ -60,7 +60,7 @@ double HmmProbability::NormalizedTransitionMetric(shared_ptr<Bind> sourcePositio
     if (route_length == -1) {
         return -1;
     }else{
-        return fabs(linear_distance - route_length) / (time_diff * time_diff );
+        return fabs(linear_distance - route_length) / (linear_distance / 16.666666666667 *1000 / 40);
     }
 
 }

@@ -27,5 +27,10 @@ public:
     vector<shared_ptr<Bind>> candidates_;
 };
 
+class StepList {
+public:
+    int route_id_;
+    list<shared_ptr<CadidatesStep>> step_list_;
+};
 
 #endif //ROAD_MATCH_SERVICE_BIND_H
