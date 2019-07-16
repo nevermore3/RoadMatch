@@ -12,6 +12,9 @@
 #include "util/distance.h"
 #include "util/match_geo_util.h"
 #include "util/mesh_feature_key_util.h"
+#include "geom/geo_util.h"
+
+#include <iomanip>
 
 //#define DEBUG_MATCHING
 
@@ -38,6 +41,7 @@ bool Viterbi::Compute(const list<shared_ptr<CadidatesStep>> &steplist,
     for (; step_it != steplist.end(); ++step_it) {
         shared_ptr<CadidatesStep> prev_time_step = step;
         step = *step_it;
+
         shared_ptr<ForwardStepResult> forward_result = make_shared<ForwardStepResult>();
 
         ForwardStep(prev_time_step, step, probablity, forward_result, mesh_manage);
@@ -63,6 +67,7 @@ bool Viterbi::Compute(const list<shared_ptr<CadidatesStep>> &steplist,
             mostLikelySequence.back_pointer_sequence_.emplace_back(forward_result->back_pointers_);
 
         mostLikelySequence.probability_sequence_.emplace_back(forward_result->probability_);
+
     }
     if (!mostLikelySequence.probability_sequence_.empty()) {
         shared_ptr<Bind> most_likely_state = MostLikelyState(mostLikelySequence.probability_sequence_.back());
@@ -107,9 +112,15 @@ void Viterbi::ForwardStep(shared_ptr<CadidatesStep> prevStep,
         double maxLogProbability = DoubleNegInfinity;
         shared_ptr<Bind> maxPrevState;
         //找出之前的step候选项到当前step可能性最大的
+
         for (auto prevState : prevStep->candidates_) {
             double logProbability = HmmProbability::TransitionLogProbability(prevState,
                                                                              curState, path_map_, mesh_manage);
+
+//            double angleDiffProbability =
+//                    HmmProbability::AngleDiffLogProbability(prevState, curState, last_angle, path_map_, mesh_manage);
+//
+//            logProbability += angleDiffProbability;
 
             auto prob_it = probability_.find(prevState);
             if (prob_it != probability_.end()) {
@@ -127,7 +138,7 @@ void Viterbi::ForwardStep(shared_ptr<CadidatesStep> prevStep,
             continue;
 
 #ifdef DEBUG_MATCHING
-        cout<<curState->match_road_->id_<<" "<<maxPrevState->match_road_->id_
+        cout<<setprecision(15)<<curState->match_road_->id_<<" "<<maxPrevState->match_road_->id_
             <<" "<<maxLogProbability
             <<" ("<<curState->query_point_->lng_<<","<<curState->query_point_->lat_<<")"<<endl;
 #endif
@@ -137,7 +148,6 @@ void Viterbi::ForwardStep(shared_ptr<CadidatesStep> prevStep,
         forward_result->probability_.insert(make_pair(curState, maxLogProbability + emission_probability));
 
         forward_result->back_pointers_.insert(make_pair(curState, maxPrevState));
-
     }
 }
 
@@ -190,6 +200,7 @@ void Viterbi::RetrieveMostLikelySequence(list<unordered_map<shared_ptr<Bind>, sh
 bool Viterbi::BuildFullPath(const list<shared_ptr<Bind>> &bind_list,
                             list<shared_ptr<KDRoad>> &res_list,
                             IManager *mesh_manage) {
+    list<shared_ptr<KDRoad>> temp_list;
     PathEngine engine;
     auto bind_it = bind_list.begin();
     while (bind_it != bind_list.end()) {
@@ -200,10 +211,10 @@ bool Viterbi::BuildFullPath(const list<shared_ptr<Bind>> &bind_list,
 //        res_list.emplace_back(band1->match_road_);
         shared_ptr<Bind> band2 = *bind_it;
         if (engine.IsRoadConnect(mesh_manage, band1->match_road_, band2->match_road_)) {
-            res_list.emplace_back(band1->match_road_);
+            temp_list.emplace_back(band1->match_road_);
         } else {
             std::list<shared_ptr<KDRoad>> sub_list;
-            if (engine.FindPath(mesh_manage, band1->match_road_,band1->snapped_point_,
+            if (engine.FindPath(mesh_manage, band1->s2e_, band1->match_road_,band1->snapped_point_,
                                 band2->match_road_, band2->snapped_point_, sub_list)) {
                 auto road_cnt = sub_list.size();
                 int index = 0;
@@ -211,7 +222,7 @@ bool Viterbi::BuildFullPath(const list<shared_ptr<Bind>> &bind_list,
                     index++;
                     if (index == road_cnt)
                         break;
-                    res_list.emplace_back(road);
+                    temp_list.emplace_back(road);
                 }
             } else {
                 return false;
@@ -219,7 +230,48 @@ bool Viterbi::BuildFullPath(const list<shared_ptr<Bind>> &bind_list,
         }
     }
 
-    res_list.emplace_back(bind_list.back()->match_road_);
+    temp_list.emplace_back(bind_list.back()->match_road_);
+
+    PathCheck(temp_list, mesh_manage, res_list);
+
+    return true;
+}
+
+void Viterbi::PathCheck(const list<shared_ptr<KDRoad>> &res_list,
+                        IManager* mesh_manager,
+                        list<shared_ptr<KDRoad>>& res1_list) {
+    vector<shared_ptr<KDRoad>> res_vector;
+    for (auto road: res_list) {
+        res_vector.emplace_back(road);
+    }
+
+    for (size_t i = 0; i < res_vector.size() - 2; ++i) {
+        auto road1 = res_vector[i];
+        auto road2 = res_vector[i+1];
+        auto road3 = res_vector[i+2];
+        if(i == 0)
+            res1_list.emplace_back(road1);
+        if(PathEngine::IsRoadConnect(mesh_manager, road1, road3)) {
+            res1_list.emplace_back(road3);
+            ++i;
+        } else {
+            res1_list.emplace_back(road2);
+        }
+    }
+
+    res1_list.emplace_back(res_vector[res_vector.size()-1]);
+}
+
+bool Viterbi::BuildCurStateDir(shared_ptr<Bind> prevState,
+                               shared_ptr<Bind> curState,
+                                IManager *mesh_manage) {
+    PathEngine::ConnType connType =
+            PathEngine::GetConnectType(mesh_manage, prevState->match_road_, curState->match_road_);
+    if (connType == PathEngine::HEAD_TAIL || connType == PathEngine::TAIL_TAIL) {
+        curState->s2e_ = 0;
+    } else if (connType == PathEngine::HEAD_HEAD || connType == PathEngine::TAIL_HEAD) {
+        curState->s2e_ = 1;
+    }
 
     return true;
 }

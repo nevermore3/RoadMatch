@@ -99,7 +99,7 @@ bool MeshObj::LoadRoad(string file_name, shared_ptr<STRtree> quadtree) {
         road->mesh_id_ = shpData.readStringField(i, "MESH");
         road->length_ = shpData.readDoubleField(i, "LENGTH");
         road->direction_ = shpData.readIntField(i, "DIRECTION");
-
+        road->direction_ = 1;
         if (road->road_class_ == 100 ) {
             //分类为100的数据为边框，需要过滤掉
             continue;
@@ -516,8 +516,8 @@ bool MeshManager::LoadData(const KDExtent &extent) {
 
     int meshCount = dim.width * dim.height;
     LOG(INFO) << "Prepare mesh count " << meshCount;
-//    OutputHighWay(this);
-//    OutputHighNode(this);
+    OutputHighWay(this);
+    OutputHighNode(this);
     return true;
 
 }

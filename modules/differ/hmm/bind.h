@@ -14,6 +14,7 @@ public:
     double distance_;
     int index_;
     int pos_index_;
+    int s2e_;
     shared_ptr<KDRoad> match_road_;
     shared_ptr<KDCoord> query_point_;
     shared_ptr<KDCoord> snapped_point_;

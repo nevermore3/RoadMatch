@@ -13,17 +13,15 @@
 using namespace geos::index::quadtree;
 using namespace geos::geom;
 
-
 class DiffDataManager : public IManager{
 public:
     static DiffDataManager *GetInstance() {
         static DiffDataManager instance_;
         return &instance_;
     }
+    virtual shared_ptr<MeshObj> GetMesh(const string& mesh_id);
 
-    shared_ptr<MeshObj> GetMesh(const string& mesh_id);
-
-    shared_ptr<KDRoad> GetRoad(string mesh_id, int32_t road_id);
+    virtual shared_ptr<KDRoad> GetRoad(string mesh_id, int32_t road_id);
 
     bool LoadData(const KDExtent& extent);
     bool LoadRoad(string file_name, shared_ptr<STRtree> strtree);
@@ -54,7 +52,7 @@ public:
 
     //所有加载的道路数据空间索引
     shared_ptr<Quadtree> quadtree_;
-    shared_ptr<STRtree> strtree_;
+ //   shared_ptr<STRtree> strtree_;
 
     unordered_map<int32_t, string> mesh_id_map_;
     set<string> mesh_set_;

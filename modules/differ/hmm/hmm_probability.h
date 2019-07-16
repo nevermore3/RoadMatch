@@ -16,6 +16,11 @@ public:
                                            shared_ptr<Bind> targetPosition,
                                            unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
                                            IManager *meshManage);
+    static double AngleDiffLogProbability(shared_ptr<Bind> sourcePosition,
+                                          shared_ptr<Bind> targetPosition,
+                                          double last_angle,
+                                          unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
+                                          IManager *meshManage);
 private:
     static double NormalizedTransitionMetric(shared_ptr<Bind> sourcePosition,
                                              shared_ptr<Bind> targetPosition,
@@ -34,6 +39,10 @@ private:
                            shared_ptr<Bind> sourcePosition,
                            shared_ptr<Bind> targetPosition,
                            IManager *meshManage);
+
+    static double GetDiffAngle(shared_ptr<Bind> sourcePosition,
+                               shared_ptr<Bind> targetPosition,
+                               IManager *meshManage);
 };
 
 

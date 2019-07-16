@@ -6,6 +6,7 @@
 #include "geom/geo_util.h"
 #include "data_manager/mesh_manager.h"
 #include "pathengine/path_engine.h"
+#include "util/match_geo_util.h"
 
 #define measurementErrorSigma 20.0
 #define transitionProbabilityBeta 0.00959442
@@ -33,12 +34,38 @@ double HmmProbability::TransitionLogProbability(shared_ptr<Bind> sourcePosition,
                                                          targetPosition,
                                                          path_map,meshManage);
 
+
     if (transitionMetric == -1) {
         return -INFINITY;
     } else {
  //       return exponentialDistribution(transitionProbabilityBeta,transitionMetric));
         return logExponentialDistribution(transitionProbabilityBeta,transitionMetric);
     }
+}
+
+double HmmProbability::AngleDiffLogProbability(shared_ptr<Bind> sourcePosition,
+                                                shared_ptr<Bind> targetPosition,
+                                                double last_angle,
+                                                unordered_map<string, list<shared_ptr<KDRoad>>>& path_map,
+                                                IManager *meshManage) {
+    double angle1 = geo::geo_util::calcAngle(sourcePosition->query_point_->lng_,
+                                             sourcePosition->query_point_->lat_,
+                                             targetPosition->query_point_->lng_,
+                                             targetPosition->query_point_->lat_);
+
+    double angle1_degree = angle1 / M_PI * 180;
+    double last_angle_degree = last_angle /M_PI * 180;
+
+
+    double angle_diff1 =  MatchGeoUtil::GetAngleDiff(last_angle, angle1);
+    double angle_diff2 = GetDiffAngle(sourcePosition, targetPosition, meshManage);
+
+    double angle_diff1_degree = angle_diff1 / M_PI * 180;
+    double angle_diff2_degree = angle_diff2 /M_PI * 180;
+
+    double angle_diff = MatchGeoUtil::GetAngleDiff(angle_diff1, angle_diff2);
+
+    return logExponentialDistribution(transitionProbabilityBeta, angle_diff  / M_PI * 180.0 );
 }
 
 double HmmProbability::NormalizedTransitionMetric(shared_ptr<Bind> sourcePosition,
@@ -54,7 +81,7 @@ double HmmProbability::NormalizedTransitionMetric(shared_ptr<Bind> sourcePositio
     if (route_length == -1) {
         return -1;
     }else{
-        return fabs(linear_distance - route_length) / (linear_distance / 16.666666666667 *1000 / 40);
+        return fabs(linear_distance - route_length) / (linear_distance / 16.666666666667 *1000 / 40 );
     }
 
 }
@@ -96,7 +123,7 @@ double HmmProbability::GetRoutelength(shared_ptr<Bind> sourcePosition,
     } else {
         PathEngine engine;
         list<shared_ptr<KDRoad>> road_list;
-        if (engine.FindPath(meshManage, sourcePosition->match_road_,sourcePosition->snapped_point_,
+        if (engine.FindPath(meshManage, sourcePosition->s2e_, sourcePosition->match_road_,sourcePosition->snapped_point_,
                             targetPosition->match_road_, targetPosition->snapped_point_, road_list)) {
             double length = BuilePathLength(road_list, sourcePosition, targetPosition, meshManage);
             path_map.insert(make_pair(path_key, road_list));
@@ -114,6 +141,37 @@ string HmmProbability::GetPathKey(shared_ptr<Bind> sourcePosition,
     string des = targetPosition->match_road_->mesh_id_ +
                  to_string(targetPosition->match_road_->id_);
     return (src + des);
+}
+
+double HmmProbability::GetDiffAngle(shared_ptr<Bind> sourcePosition,
+                                      shared_ptr<Bind> targetPosition,
+                                      IManager *meshManage) {
+    if(sourcePosition->match_road_->mesh_id_ == targetPosition->match_road_->mesh_id_ &&
+        sourcePosition->match_road_->id_ == targetPosition->match_road_->id_)
+        return 0.0;
+
+    PathEngine::ConnType conn_type =
+            PathEngine::GetConnectType(meshManage, sourcePosition->match_road_, targetPosition->match_road_);
+
+    double source_angle = 0.0;
+    double target_angle = 0.0;
+    if(conn_type == PathEngine::TAIL_HEAD) {
+        source_angle =  MatchGeoUtil::CalculateAngle(sourcePosition->match_road_, true);
+        target_angle =  MatchGeoUtil::CalculateAngle(targetPosition->match_road_, true);
+    } else if (conn_type == PathEngine::TAIL_TAIL) {
+        source_angle =  MatchGeoUtil::CalculateAngle(sourcePosition->match_road_, true);
+        target_angle =  MatchGeoUtil::CalculateAngle(targetPosition->match_road_, false);
+    } else if (conn_type == PathEngine::HEAD_TAIL) {
+        source_angle =  MatchGeoUtil::CalculateAngle(sourcePosition->match_road_, false);
+        target_angle =  MatchGeoUtil::CalculateAngle(targetPosition->match_road_, false);
+    } else if (conn_type == PathEngine::HEAD_HEAD) {
+        source_angle =  MatchGeoUtil::CalculateAngle(sourcePosition->match_road_, false);
+        target_angle =  MatchGeoUtil::CalculateAngle(targetPosition->match_road_, true);
+    } else {
+        return M_PI;
+    }
+
+    return MatchGeoUtil::GetAngleDiff(source_angle, target_angle);
 }
 
 double HmmProbability::BuilePathLength(const list<shared_ptr<KDRoad>>& road_list,

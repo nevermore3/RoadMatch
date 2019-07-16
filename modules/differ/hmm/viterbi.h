@@ -64,6 +64,15 @@ private:
 
     bool BuildFullPath(const list<shared_ptr<Bind>> &road_list,
                        list<shared_ptr<KDRoad>> &res_list, IManager *mesh_manage);
+
+    void PathCheck(const list<shared_ptr<KDRoad>> &res_list,
+                            IManager* mesh_manager,
+                            list<shared_ptr<KDRoad>>& res1_list);
+
+    bool BuildCurStateDir(shared_ptr<Bind> prevStep,
+                          shared_ptr<Bind> curStep,
+                          IManager *mesh_manage);
+
 private:
     unordered_map<string, list<shared_ptr<KDRoad>>> path_map_;
 };

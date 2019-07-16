@@ -92,7 +92,7 @@ public:
 
     bool FindPath(IManager *mesh_manage, std::list<shared_ptr<KDRoad>> &result);
 
-    bool FindPath(IManager *mesh_manage,
+    bool FindPath(IManager *mesh_manage, int src_dir,
                   shared_ptr<KDRoad> road_src,
                   shared_ptr<KDCoord> src_coord,
                   shared_ptr<KDRoad> road_dst,

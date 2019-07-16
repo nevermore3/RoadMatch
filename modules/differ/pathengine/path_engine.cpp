@@ -9,7 +9,7 @@
 #include "util/distance.h"
 #include "util/mesh_feature_key_util.h"
 
-#define ASTAR 1.0
+#define ASTAR 2.0
 
 FunctionBufferFilter::FunctionBufferFilter(){
 //    func_buffer_map_.insert(make_pair(0,100000));
@@ -118,7 +118,7 @@ bool PathEngine::SetSource(IManager *mesh_manage, shared_ptr<KDRoad> road_src, s
     return true;
 }
 
-bool PathEngine::FindPath(IManager* mesh_manage,
+bool PathEngine::FindPath(IManager* mesh_manage, int src_dir,
                           shared_ptr<KDRoad> road_src,
                           shared_ptr<KDCoord> src_coord,
                           shared_ptr<KDRoad> road_dst,
@@ -134,12 +134,15 @@ bool PathEngine::FindPath(IManager* mesh_manage,
 
     if (0 == road_src->direction_ || 1 == road_src->direction_) {
         shared_ptr<KDRoadNode> node1 = mesh_manage->GetMesh(road_src->mesh_id_)->road_nodes_[road_src->f_node_id_];
-        if(!SetSource(mesh_manage, road_src, node1))
-            return false;
-
-        shared_ptr<KDRoadNode> node2 = mesh_manage->GetMesh(road_src->mesh_id_)->road_nodes_[road_src->t_node_id_];
-        if(!SetSource(mesh_manage, road_src, node2))
-            return false;
+        if(src_dir == 0 || src_dir == -1) {
+            if (!SetSource(mesh_manage, road_src, node1))
+                return false;
+        }
+        if(src_dir == 1 || src_dir == -1) {
+            shared_ptr<KDRoadNode> node2 = mesh_manage->GetMesh(road_src->mesh_id_)->road_nodes_[road_src->t_node_id_];
+            if (!SetSource(mesh_manage, road_src, node2))
+                return false;
+        }
     }
 
     if (2 == road_src->direction_) {
@@ -212,7 +215,6 @@ void PathEngine::ExtendPath(IManager* mesh_manage, shared_ptr<SearchLink> cur_li
         return;
 
     double filter_query_dis = GetFilterQueryDistance(cur_node_->coord_);
-
     for (auto out_road : cur_node_->from_roads_) {
         if (out_road->id_ == cur_link->get_kdroad()->id_ &&
             out_road->mesh_id_ == cur_link->get_kdroad()->mesh_id_)
