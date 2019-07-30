@@ -22,6 +22,10 @@ int main(int argc, const char* argv[]) {
     google::SetLogDestination(0, (out_path + "/output.log.").c_str());
 
     GlobalCache * globalCache = GlobalCache::GetInstance();
+    // mesh path /home/ubuntu/data/110000_old_all
+    // diff path /home/ubuntu/data/route_beijing
+    // output    /home/ubuntu/log/output
+
     globalCache->set_mesh_data_path(mesh_path);
     globalCache->set_diff_data_path(diff_path);
     globalCache->set_out_path(out_path);

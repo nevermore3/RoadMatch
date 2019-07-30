@@ -245,6 +245,13 @@ void Viterbi::PathCheck(const list<shared_ptr<KDRoad>> &res_list,
         res_vector.emplace_back(road);
     }
 
+    if(res_vector.size() <= 2) {
+        for (size_t i = 0; i < res_vector.size(); ++i) {
+            res1_list.emplace_back(res_vector[i]);
+        }
+        return;
+    }
+
     for (size_t i = 0; i < res_vector.size() - 2; ++i) {
         auto road1 = res_vector[i];
         auto road2 = res_vector[i+1];

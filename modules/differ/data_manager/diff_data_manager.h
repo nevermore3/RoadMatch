@@ -28,7 +28,6 @@ public:
     bool LoadNode(string file_name);
 
     void BuildBoundry();
-    void RemoveNonHighWay();
 
 private:
     void StringToVector(string, shared_ptr<KDRoadNode>, shared_ptr<MeshObj>);
@@ -47,12 +46,11 @@ public:
     unordered_map<int64_t, set<shared_ptr<KDRoadNode>>> code_node_;
     unordered_map<int64_t, set<shared_ptr<KDRoad>>> code_road_;
 
-    //unordered_map<int64_t, shared_ptr<KDRoad>> node_road_;
 
 
     //所有加载的道路数据空间索引
     shared_ptr<Quadtree> quadtree_;
- //   shared_ptr<STRtree> strtree_;
+    shared_ptr<STRtree> strtree_;
 
     unordered_map<int32_t, string> mesh_id_map_;
     set<string> mesh_set_;

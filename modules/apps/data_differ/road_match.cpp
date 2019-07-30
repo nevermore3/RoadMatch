@@ -1,117 +1,86 @@
 //
-// Created by liujian on 19-7-10.
+// Created by ubuntu on 19-7-30.
 //
 
-#include <geom/geo_util.h>
-#include <output/shp_output.h>
-#include "diff_controller.h"
-
-#include "data_manager/data_types.h"
-#include "data_manager/data_manager.h"
+#include "road_match.h"
 #include "data_manager/mesh_manager.h"
 #include "data_manager/diff_data_manager.h"
-#include "data_manager/route_manager.h"
-#include "pathengine/path_engine.h"
-#include "util/distance.h"
 #include "util/geometry_util.h"
-#include "hmm/bind.h"
-#include "hmm/viterbi.h"
-#include "global_cache.h"
-#include "road_match.h"
+#include "util/distance.h"
 
 #include "glog/logging.h"
+#include "glog/log_severity.h"
+#include "geos/geom/Coordinate.h"
+#include "geos/geom/GeometryFactory.h"
+#include "geos/geom/CoordinateSequence.h"
+#include "geos/geom/CoordinateArraySequence.h"
+#include "geos/geom/Point.h"
+#include "global_cache.h"
+#include "data_manager/route_manager.h"
+#include "pathengine/path_engine.h"
+#include "output/shp_output.h"
+#include "hmm/bind.h"
+#include "hmm/viterbi.h"
 
-bool DiffController::Differing() {
-    DataManager data_manager;
-    data_manager.extent_ =  KDExtent(115.384, 117.5, 39.322, 41.2);
-    data_manager.base_data_manager_ = MeshManager::GetInstance();
-    data_manager.diff_data_manager_ = DiffDataManager::GetInstance();
+#include <shp/ShpData.hpp>
+#include <geom/geo_util.h>
 
-    if(!data_manager.LoadData())
-        return false;
-    // step 2： 组成长路径
+#include <iostream>
+#include <string>
+#include <algorithm>
+#include <sys/types.h>
+#include <sys/stat.h>
+using namespace std;
+
+bool RoadMatch::MatchProcess()
+{
+    cout<<"Start Match Process"<<endl;
+    MeshManager *src = MeshManager::GetInstance();
+    DiffDataManager *dest = DiffDataManager::GetInstance();
+
     RouteManager *routeManager = RouteManager::GetInstance();
-    routeManager->LoadRoute();
 
-    //step 3 : 差分
-    RoadMatch *roadMatch = RoadMatch::GetInstance();
+    // 查找新增的road
+    for (auto route : routeManager->routes_) {
+        shared_ptr<Route>routeObj = route.second;
+        double bufferSize = 20;
+        vector<void *>temp;
+        shared_ptr<LineString>searchLine = GeometryUtil::CreateLineString(routeObj->points_);
+        shared_ptr<geos::geom::Geometry> geom_buffer(searchLine->buffer(bufferSize));
+        src->strtree_->query(geom_buffer->getEnvelopeInternal(), temp);
 
-    if (!roadMatch->MatchProcess())
-        return false;
+        vector<shared_ptr<KDRoad>>queryObjs;
 
-    //return true;
-    shared_ptr<KDRoad> road_src = data_manager.diff_data_manager_->GetRoad("478_451", 56100);
-    shared_ptr<KDCoord> src_coord = make_shared<KDCoord>();
-    // 116.48254668, 39.8655617774
-    src_coord->lng_ =  116.482175;
-    src_coord->lat_ =  39.86417;
-
-    shared_ptr<KDRoad> road_dst = data_manager.diff_data_manager_->GetRoad("482_451", 4004);
-    shared_ptr<KDCoord> des_coord = make_shared<KDCoord>();
-    des_coord->lng_ =  116.468003601;
-    des_coord->lat_ =  40.238352272;
-
-//    shared_ptr<KDRoad> road_src = data_manager.base_data_manager_->GetRoad("J50F005020", 1887);
-//    shared_ptr<KDCoord> src_coord = make_shared<KDCoord>();
-//    src_coord->lng_ =  116.40222222222;
-//    src_coord->lat_ =  39.640555555556;
-//
-//    shared_ptr<KDRoad> road_dst = data_manager.base_data_manager_->GetRoad("J50F004019", 12888);
-//    shared_ptr<KDCoord> des_coord = make_shared<KDCoord>();
-//    des_coord->lng_ =  116.36333333333;
-//    des_coord->lat_ =  39.721944444444;
-
-    PathEngine engine;
-    engine.SetSearchCount(50000);
-    std::list<shared_ptr<KDRoad>> result;
-    engine.FindPath(data_manager.diff_data_manager_, -1, road_src, src_coord, road_dst, des_coord, result);
-
-    vector<shared_ptr<KDCoord>> coord_list;
-
-    auto road_it = result.begin();
-    auto next_it = road_it;
-    while(road_it != result.end()) {
-        ++next_it;
-        if(next_it == result.end()) {
-            break;
-        }
-        PathEngine::ConnType conn_type =
-                PathEngine::GetConnectType(data_manager.diff_data_manager_, (*road_it), (*next_it));
-
-        if(conn_type == PathEngine::UN_CONN)
-            break;
-
-        if(conn_type == PathEngine::TAIL_HEAD) {
-            if (road_it == result.begin()) {
-                coord_list.insert(coord_list.end(), (*road_it)->points_.begin(), (*road_it)->points_.end());
-            }
-            coord_list.insert(coord_list.end(), ++((*next_it)->points_.begin()), (*next_it)->points_.end());
-        } else if (conn_type == PathEngine::TAIL_TAIL) {
-            if (road_it == result.begin()) {
-                coord_list.insert(coord_list.end(), (*road_it)->points_.begin(), (*road_it)->points_.end());
-            }
-            coord_list.insert(coord_list.end(), ++((*next_it)->points_.rbegin()), (*next_it)->points_.rend());
-        }  else if (conn_type == PathEngine::HEAD_HEAD) {
-            if (road_it == result.begin()) {
-                coord_list.insert(coord_list.end(), (*road_it)->points_.rbegin(), (*road_it)->points_.rend());
-            }
-            coord_list.insert(coord_list.end(), ++((*next_it)->points_.begin()), (*next_it)->points_.end());
-        } else if (conn_type == PathEngine::HEAD_TAIL) {
-            if (road_it == result.begin()) {
-                coord_list.insert(coord_list.end(), (*road_it)->points_.rbegin(), (*road_it)->points_.rend());
-            }
-            coord_list.insert(coord_list.end(), ++((*next_it)->points_.rbegin()), (*next_it)->points_.rend());
+        for (auto i : temp) {
+            auto *road = static_cast<KDRoad *>(i);
+            queryObjs.push_back(src->meshs_[road->mesh_id_]->roads_[road->id_]);
         }
 
-        road_it = next_it;
+        if (queryObjs.empty()) {
+            //TODO 新增
+        } else {
+            if (routeObj->id_ == 371) {
+                MatchRoute(routeObj);
+            }
+
+        }
+
     }
 
+}
+
+
+void RoadMatch::MatchRoute(shared_ptr<Route> route)
+{
+    PathEngine engine;
+    engine.SetSearchCount(50);
     vector<shared_ptr<KDCoord>> dense_coord_list;
-    double angle = geo::geo_util::calcAngle(136.232323, 39.0,
-                                            136.232323, 39.1);
-    for(size_t i = 0; i < coord_list.size() - 1; ++i) {
-        auto coord1 = coord_list[i];
-        auto coord2 = coord_list[i+1];
+//    double angle = geo::geo_util::calcAngle(136.232323, 39.0,
+//                                            136.232323, 39.1);
+
+    for(size_t i = 0; i < route->points_.size() - 1; ++i) {
+        auto coord1 = route->points_[i];
+        auto coord2 = route->points_[i+1];
         if(i == 0)
             dense_coord_list.emplace_back(coord1);
         if(Distance::distance(coord1, coord2) < 1000) {
@@ -136,7 +105,9 @@ bool DiffController::Differing() {
 
     }
 
-    IManager* mesh_manage_ = data_manager.base_data_manager_;
+    //IManager* mesh_manage_ = data_manager.base_data_manager_;
+    IManager* mesh_manage_ = MeshManager::GetInstance();
+
     list<StepList> all_steps;
     StepList stepList;
     for (size_t index = 0; index < dense_coord_list.size(); index++) {
@@ -206,18 +177,20 @@ bool DiffController::Differing() {
     }
 
     all_steps.emplace_back(stepList);
-    cout<<"result: "<<result.size()<<endl;
+    cout<<"result: "<<route->roads_.size()<<endl;
     list<shared_ptr<KDRoad>> res_list;
     Viterbi viterbi;
     viterbi.Compute(stepList.step_list_, false, res_list, mesh_manage_);
 
-    list<shared_ptr<KDRoad>> match_list;
-
-
-
     string output_path = GlobalCache::GetInstance()->out_path();
-    ShpOutPut::OutPutLinkList(output_path + "/path1", result);
-    ShpOutPut::OutPutLinkList(output_path + "/path2", res_list);
+    string outputPath = output_path + "/test";
 
-    return true;
+    if (access(outputPath.c_str(), F_OK) == -1) {
+        if (mkdir(outputPath.c_str(), 0755) == -1) {
+            LOG(ERROR)<<"mkdir output error !!!";
+            return;
+        }
+    }
+    //ShpOutPut::OutPutLinkList(outputPath + "/path1", result);
+    ShpOutPut::OutPutLinkList(outputPath + "/path2", res_list);
 }

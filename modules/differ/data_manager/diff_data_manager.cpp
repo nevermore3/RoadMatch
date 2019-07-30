@@ -55,6 +55,7 @@ bool DiffDataManager::LoadData(const KDExtent &extent)
     OutputRoad(output);
     OutputNode(output);
 
+
     return true;
 }
 
@@ -87,9 +88,20 @@ bool DiffDataManager::LoadRoad(string fileName, shared_ptr<STRtree> strtree)
         road->direction_ = 1;
 
         //remove non-highway
-//        if (road->road_name_.find("高速") == std::string::npos) {
-//            continue;
-//        }
+
+        if ((road->road_name_.find("二环") == std::string::npos &&
+             road->road_name_.find("三环") == std::string::npos &&
+             road->road_name_.find("四环") == std::string::npos &&
+             road->road_name_.find("五环") == std::string::npos &&
+             road->road_name_.find("六环") == std::string::npos) ||
+            (road->road_name_.find("辅路") != std::string::npos)) {
+
+
+            if (road->road_name_.find("辅路") != std::string::npos ||
+                road->road_name_.find("高速") == std::string::npos) {
+                continue;
+            }
+        }
 
         shared_ptr<MeshObj>meshObj;
         if (meshs_.find(road->mesh_id_) == meshs_.end()) {
@@ -144,7 +156,7 @@ bool DiffDataManager::LoadRoad(string fileName, shared_ptr<STRtree> strtree)
 
         road->line_.reset(gf->createLineString(cl));
 
-        //      quadtree->insert(road->line_->getEnvelopeInternal(), road.get());
+        //quadtree->insert(road->line_->getEnvelopeInternal(), road.get());
         strtree->insert(road->line_->getEnvelopeInternal(), road.get());
         //add to cache
 
@@ -350,14 +362,15 @@ string VectorToString(vector<shared_ptr<KDRoad>> linkRoad)
 
 void DiffDataManager::OutputNode(const string &filename)
 {
-    if (access(filename.c_str(), NULL) == -1) {
-        if (mkdir(filename.c_str(), 0755) == -1) {
+    string outputPath = filename + "/Diff";
+    if (access(outputPath.c_str(), NULL) == -1) {
+        if (mkdir(outputPath.c_str(), 0755) == -1) {
             LOG(ERROR)<<"mkdir output error !!!";
             return;
         }
     }
-    string dbfName = filename + "/NODE.dbf";
-    string shpName = filename + "/NODE.shp";
+    string dbfName = outputPath + "/diff_node.dbf";
+    string shpName = outputPath + "/diff_node.shp";
 
     SHPHandle ptrRoadShp_ = nullptr;
     DBFHandle ptrRoadDbf_ = nullptr;
@@ -422,14 +435,16 @@ void DiffDataManager::OutputNode(const string &filename)
 
 
 void DiffDataManager::OutputRoad(const string &filename){
-    if (access(filename.c_str(), NULL) == -1) {
-        if (mkdir(filename.c_str(), 0755) == -1) {
+    string outputPath = filename + "/Diff";
+
+    if (access(outputPath.c_str(), NULL) == -1) {
+        if (mkdir(outputPath.c_str(), 0755) == -1) {
             LOG(ERROR)<<"mkdir output error !!!";
             return;
         }
     }
-    string dbfName = filename + "/ROAD.dbf";
-    string shpName = filename + "/ROAD.shp";
+    string dbfName = outputPath + "/diff_road.dbf";
+    string shpName = outputPath + "/diff_road.shp";
 
     SHPHandle ptrRoadShp_ = nullptr;
     DBFHandle ptrRoadDbf_ = nullptr;

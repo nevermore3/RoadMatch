@@ -25,6 +25,9 @@ using namespace kd::automap;
 
 #include "glog/logging.h"
 #include "glog/log_severity.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 MeshObj::MeshObj() {
 
@@ -100,10 +103,23 @@ bool MeshObj::LoadRoad(string file_name, shared_ptr<STRtree> quadtree) {
         road->length_ = shpData.readDoubleField(i, "LENGTH");
         road->direction_ = shpData.readIntField(i, "DIRECTION");
         road->direction_ = 1;
+
         if (road->road_class_ == 100 ) {
             //分类为100的数据为边框，需要过滤掉
             continue;
         }
+
+
+        if (road->road_class_ != 41000
+            && road->road_class_ != 43000
+            && road->form_way_ !=3
+            && road->form_way_ != 8
+            && road->form_way_ != 53
+            && road->form_way_ != 58)
+            continue;
+
+        if (road->form_way_ == 5)
+            continue;
 
 //        if (road->road_class_ >= 47000 && road->road_class_ != 51000 && road->form_way_ != 2  && road->road_class_ != 52000)
 //            continue;
@@ -310,9 +326,17 @@ bool MeshObj::LoadAdjNode(string file_name) {
 
 void OutputHighWay(MeshManager * meshManage) {
     string output_path = GlobalCache::GetInstance()->out_path();
+    string outputPath = output_path + "/SRC";
 
-    string dbf_file = output_path + "/HIGHROAD.dbf";
-    string shp_file = output_path + "/HIGHROAD.shp";
+    if (access(outputPath.c_str(), F_OK) == -1) {
+        if (mkdir(outputPath.c_str(), 0755) == -1) {
+            LOG(ERROR)<<"mkdir output error !!!";
+            return;
+        }
+    }
+
+    string dbf_file = outputPath + "/base_road.dbf";
+    string shp_file = outputPath + "/base_road.shp";
 
     SHPHandle ptrRoadShp_ = nullptr;
     DBFHandle ptrRoadDbf_ = nullptr;
@@ -372,9 +396,18 @@ void OutputHighWay(MeshManager * meshManage) {
 
 void OutputHighNode(MeshManager * meshManage) {
     string output_path = GlobalCache::GetInstance()->out_path();
+    string outputPath = output_path + "/SRC";
 
-    string dbf_file = output_path + "/HIGHNODE.dbf";
-    string shp_file = output_path + "/HIGHNODE.shp";
+    if (access(outputPath.c_str(), F_OK) == -1) {
+        if (mkdir(outputPath.c_str(), 0755) == -1) {
+            LOG(ERROR)<<"mkdir output error !!!";
+            return;
+        }
+    }
+
+
+    string dbf_file = outputPath + "/base_node.dbf";
+    string shp_file = outputPath + "/base_node.shp";
 
     SHPHandle ptrRoadShp_ = nullptr;
     DBFHandle ptrRoadDbf_ = nullptr;
