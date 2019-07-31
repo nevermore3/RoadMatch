@@ -39,7 +39,8 @@ bool DiffController::Differing() {
     if (!roadMatch->MatchProcess())
         return false;
 
-    //return true;
+    return true;
+
     shared_ptr<KDRoad> road_src = data_manager.diff_data_manager_->GetRoad("478_451", 56100);
     shared_ptr<KDCoord> src_coord = make_shared<KDCoord>();
     // 116.48254668, 39.8655617774

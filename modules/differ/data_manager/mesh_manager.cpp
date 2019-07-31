@@ -326,7 +326,7 @@ bool MeshObj::LoadAdjNode(string file_name) {
 
 void OutputHighWay(MeshManager * meshManage) {
     string output_path = GlobalCache::GetInstance()->out_path();
-    string outputPath = output_path + "/SRC";
+    string outputPath = output_path + "/base";
 
     if (access(outputPath.c_str(), F_OK) == -1) {
         if (mkdir(outputPath.c_str(), 0755) == -1) {
@@ -396,7 +396,7 @@ void OutputHighWay(MeshManager * meshManage) {
 
 void OutputHighNode(MeshManager * meshManage) {
     string output_path = GlobalCache::GetInstance()->out_path();
-    string outputPath = output_path + "/SRC";
+    string outputPath = output_path + "/base";
 
     if (access(outputPath.c_str(), F_OK) == -1) {
         if (mkdir(outputPath.c_str(), 0755) == -1) {

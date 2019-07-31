@@ -55,6 +55,7 @@ void RouteManager::ExtendFrom(shared_ptr<Route> route, shared_ptr<KDRoad> road)
 
     //
     route->f_node_id_ = road->f_node_id_;
+    route->start_point_ = meshs_[road->mesh_id_]->road_nodes_[road->f_node_id_];
 
     int64_t  fromNode = road->f_node_id_;
     unordered_map<int32_t, shared_ptr<KDRoadNode>> roadNodes = meshs_[road->mesh_id_]->road_nodes_;
@@ -108,6 +109,7 @@ void RouteManager::ExtendTo(shared_ptr<Route> route, shared_ptr<KDRoad> road)
     route->total_length_ += road->length_;
     //
     route->t_node_id_ = road->t_node_id_;
+    route->end_point_ = meshs_[road->mesh_id_]->road_nodes_[road->t_node_id_];
 
     int64_t  toNode = road->t_node_id_;
     unordered_map<int32_t, shared_ptr<KDRoadNode>> roadNodes = meshs_[road->mesh_id_]->road_nodes_;
@@ -145,7 +147,6 @@ bool RouteManager::Init()
             string name = roadObj->road_name_;
 
             if (IsVisit(roadObj)) {
-                //cout << "road : " << roadObj->id_ << "  Has Visited" << endl;
                 continue;
             }
 
@@ -160,6 +161,8 @@ bool RouteManager::Init()
             route->points_.insert(route->points_.begin(), roadObj->points_.begin() + 1, roadObj->points_.end());
             route->f_node_id_ = roadObj->f_node_id_;
             route->t_node_id_ = roadObj->t_node_id_;
+            route->start_point_ = meshs_[roadObj->mesh_id_]->road_nodes_[roadObj->f_node_id_];
+            route->end_point_ = meshs_[roadObj->mesh_id_]->road_nodes_[roadObj->t_node_id_];
             // connect left
             {
                 int64_t fromNode = roadObj->f_node_id_;
@@ -232,6 +235,7 @@ void RouteManager::LoadRoute()
     SetMesh(diffDataManager->meshs_);
 
     Init();
+    //cout<<"route ' size is "<<routes_.size()<<endl;
     string output = GlobalCache::GetInstance()->out_path();
     OutputRoad(output);
     OutputNode(output);

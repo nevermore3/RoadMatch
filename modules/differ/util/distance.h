@@ -16,10 +16,18 @@ class Distance {
         static double distance(double lng1,double lat1,double lng2,double lat2);
         static double distance(const shared_ptr<KDCoord> pt1, const shared_ptr<KDCoord> pt2);
 
+
         static double distance(const shared_ptr<KDCoord> pt,
                                const vector<shared_ptr<KDCoord>>& line,
-                                shared_ptr<KDCoord> pFoot,
+                               shared_ptr<KDCoord> pFoot,
                                int32_t* pSeg);
+
+        static double distance(const shared_ptr<KDCoord> pt,
+                               const vector<shared_ptr<KDCoord>>& line,
+                               shared_ptr<KDCoord> pFoot,
+                               int32_t* pSeg, int8_t* locate, int start,
+                               int end);
+        // default: locate=nullptr , start = 0, end = -1;
 
         static double GetDegreeDistance(double meter_dis,double lon,double lat);
 

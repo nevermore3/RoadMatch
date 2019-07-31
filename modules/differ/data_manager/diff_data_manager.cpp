@@ -362,7 +362,7 @@ string VectorToString(vector<shared_ptr<KDRoad>> linkRoad)
 
 void DiffDataManager::OutputNode(const string &filename)
 {
-    string outputPath = filename + "/Diff";
+    string outputPath = filename + "/diff";
     if (access(outputPath.c_str(), NULL) == -1) {
         if (mkdir(outputPath.c_str(), 0755) == -1) {
             LOG(ERROR)<<"mkdir output error !!!";
@@ -435,7 +435,7 @@ void DiffDataManager::OutputNode(const string &filename)
 
 
 void DiffDataManager::OutputRoad(const string &filename){
-    string outputPath = filename + "/Diff";
+    string outputPath = filename + "/diff";
 
     if (access(outputPath.c_str(), NULL) == -1) {
         if (mkdir(outputPath.c_str(), 0755) == -1) {

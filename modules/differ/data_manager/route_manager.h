@@ -80,6 +80,10 @@ public:
 
     vector<shared_ptr<KDCoord>> points_;
 
+    shared_ptr<KDRoadNode> start_point_;
+
+    shared_ptr<KDRoadNode> end_point_;
+
     int64_t f_node_id_;
 
     int64_t t_node_id_;

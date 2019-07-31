@@ -137,3 +137,103 @@ double Distance::GetSimpleLength(const vector<shared_ptr<KDCoord>>& line){
     }
     return dis;
 }
+
+
+double Distance::distance(const shared_ptr<KDCoord> pt,
+                          const vector<shared_ptr<KDCoord>>& line,
+                          shared_ptr<KDCoord> pFoot,
+                          int32_t* pSeg, int8_t* locate,
+                          int start, int end) {
+    double dMinDistance = INT_MAX;
+//    int last_index;
+    int ptNum = line.size();
+    if(locate)
+        *locate = -2;
+
+    int lo = -2;
+    bool flag = true;
+//    if(end == -1)
+//        last_index = line.size();
+//    else
+//        last_index = end - 1;
+
+
+    for (int i = 0; i < ptNum - 1; i++) {
+        shared_ptr<KDCoord> a = line[i];
+        shared_ptr<KDCoord> b = line[i + 1];
+
+        shared_ptr<KDCoord> c = make_shared<KDCoord>();
+        shared_ptr<KDCoord> ab = make_shared<KDCoord>();
+        ab->lat_ = b->lat_  - a->lat_ ;
+        ab->lng_ = b->lng_  - a->lng_ ;
+        shared_ptr<KDCoord> ac = make_shared<KDCoord>();
+        ac->lat_ = pt->lat_ - a->lat_;
+        ac->lng_ = pt->lng_ - a->lng_ ;
+
+        double cosLat = cos(pt->lat_ * deg2rad);
+        double f = ab->lng_ * 100000000.0 * ac->lng_ * 100000000.0 * cosLat * cosLat +
+                   ab->lat_ * 100000000.0 * ac->lat_ * 100000000.0;
+        double d = ab->lng_ * 100000000.0 * ab->lng_ * 100000000 * cosLat * cosLat +
+                   ab->lat_ * 100000000.0 * ab->lat_ * 100000000.0;
+
+        double dDis = INT_MAX;
+        if (fabs(d) < 0.0000001) {
+            // dDis=0;
+            dDis = distance(a, pt);
+        } else {
+            if (f < 0) {
+                // Distance(a, c);
+                lo = -1;
+                dDis = distance(a, pt);
+            } else if (f > d) {
+                // Distance(b, c)
+                lo = 1;
+                dDis = distance(b, pt);
+            } else {
+                lo = 0;
+                double newf = f / d;
+                //use our own defined function to adjust the accuracy
+                c->lng_ = a->lng_ + newf * ab->lng_;
+                c->lat_ = a->lat_ + newf * ab->lat_;
+                dDis = distance(c, pt);
+            }
+            if (flag) {
+                if (locate)
+                    *locate = lo;
+                flag = false;
+            }
+        }
+
+        if (dDis < dMinDistance) {
+            if(locate) {
+                *locate = lo;
+//                if(i > 0 && i < ptNum - 1) {
+//                    *locate = 0;
+//                }
+            }
+            dMinDistance = dDis;
+            if (pSeg) {
+                *pSeg = i;
+//				cout<<"pSeg = " << (*pSeg) << endl;
+            }
+
+            if (pFoot) {
+                if (abs(d) < 0.0000001) {
+                    pFoot->lng_ = a->lng_;
+                    pFoot->lat_ = a->lat_;
+                } else if (f < 0) {
+                    pFoot->lng_ = a->lng_;
+                    pFoot->lat_ = a->lat_;
+                } else if (f > d) {
+                    pFoot->lng_ = b->lng_;
+                    pFoot->lat_ = b->lat_;
+                } else {
+                    pFoot->lng_ = c->lng_;
+                    pFoot->lat_ = c->lat_;
+                }
+            }
+        }
+    }
+
+    return dMinDistance;
+}
