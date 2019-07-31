@@ -300,13 +300,14 @@ void DiffDataManager::BuildBoundry()
         count++;
         shared_ptr<KDRoadNode> nodeA = *(codeNode.begin());
         shared_ptr<KDRoadNode> nodeB = *(codeNode.rbegin());
-
-        nodeA->boundary_ = 1;
-        nodeB->boundary_ = 1;
-        nodeA->adj_id_ = nodeB->id_;
-        nodeB->adj_id_ = nodeA->id_;
-        nodeA->adj_mesh_id_ = nodeB->mesh_id_;
-        nodeB->adj_mesh_id_ = nodeA->mesh_id_;
+        if(nodeA->to_roads_.size() == 1 && nodeA->from_roads_.size() == 1) {
+            nodeA->boundary_ = 1;
+            nodeB->boundary_ = 1;
+            nodeA->adj_id_ = nodeB->id_;
+            nodeB->adj_id_ = nodeA->id_;
+            nodeA->adj_mesh_id_ = nodeB->mesh_id_;
+            nodeB->adj_mesh_id_ = nodeA->mesh_id_;
+        }
     }
     //cout<<"count  is "<<count<<endl;
     // 修正 road的 f_node_id & t_node_id

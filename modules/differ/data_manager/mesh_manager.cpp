@@ -102,7 +102,7 @@ bool MeshObj::LoadRoad(string file_name, shared_ptr<STRtree> quadtree) {
         road->mesh_id_ = shpData.readStringField(i, "MESH");
         road->length_ = shpData.readDoubleField(i, "LENGTH");
         road->direction_ = shpData.readIntField(i, "DIRECTION");
-        road->direction_ = 1;
+ //       road->direction_ = 1;
 
         if (road->road_class_ == 100 ) {
             //分类为100的数据为边框，需要过滤掉

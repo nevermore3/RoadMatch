@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="sdmap_differ_fusion"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\modules\;CMake Files\modules\differ\;CMake Files\modules\apps\;CMake Files\modules\apps\data_differ\;CMake Files\cmake\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="sdmap_differ_fusion">
+				<Option output="/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/sdmap_differ_fusion" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/thirdparty/platform/linux/poco/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/thirdparty/platform/linux/geos/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/thirdparty/platform/linux/opencv3/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/thirdparty/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/modules/server/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/modules/api/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/modules/core/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../nds-libs/depends/thirdparty/glog/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/../../differ"/>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 sdmap_differ_fusion"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="sdmap_differ_fusion/fast">
+				<Option output="/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/sdmap_differ_fusion" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/thirdparty/platform/linux/poco/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/thirdparty/platform/linux/geos/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/thirdparty/platform/linux/opencv3/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/thirdparty/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/modules/server/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/modules/api/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../autohdmap-libs/modules/core/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/../nds-libs/depends/thirdparty/glog/include"/>
+					<Add directory="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/../../differ"/>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 sdmap_differ_fusion/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/diff_controller.cpp">
+			<Option target="sdmap_differ_fusion"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/diff_controller.h">
+			<Option target="sdmap_differ_fusion"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/main.cpp">
+			<Option target="sdmap_differ_fusion"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/road_match.cpp">
+			<Option target="sdmap_differ_fusion"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/road_match.h">
+			<Option target="sdmap_differ_fusion"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/road_sort.cpp">
+			<Option target="sdmap_differ_fusion"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/road_sort.h">
+			<Option target="sdmap_differ_fusion"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\modules\"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/differ/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\modules\differ\"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\modules\apps\"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\modules\apps\data_differ\"/>
+		</Unit>
+		<Unit filename="/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake/BuildType.cmake">
+			<Option virtualFolder="CMake Files\cmake\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
