@@ -60,7 +60,7 @@ bool RoadMatch::MatchProcess()
             //TODO 新增
 
         } else {
-            if (routeObj->id_ == 371) {
+            if (routeObj->id_ == 292) {
                 MatchRoute(routeObj);
             }
 
@@ -115,8 +115,7 @@ void RoadMatch::MatchRoute(shared_ptr<Route> route)
         shared_ptr<KDCoord> coord = dense_coord_list[index];
 
         shared_ptr<Point> point(GeometryUtil::CreatePoint(coord));
-        double query_buffer = Distance::GetDegreeDistance(30.0, coord->lng_, coord->lat_);
-        shared_ptr<geos::geom::Geometry> geom_buffer(point->buffer(30.0));
+        shared_ptr<geos::geom::Geometry> geom_buffer(point->buffer(100.0));
         vector<void *> queryObjs;
         mesh_manage_->strtree_->query(geom_buffer->getEnvelopeInternal(), queryObjs);
 
@@ -131,7 +130,7 @@ void RoadMatch::MatchRoute(shared_ptr<Route> route)
             int pos_index;
             shared_ptr<KDCoord> foot = make_shared<KDCoord>();
             double distance = Distance::distance(coord, road->points_, foot, &pos_index);
-            if (distance > 30.0 * 100)
+            if (distance > 100.0 * 100)
                 continue;
 
             shared_ptr<Bind> bind = make_shared<Bind>();
