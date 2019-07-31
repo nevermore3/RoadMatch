@@ -25,8 +25,8 @@ class Distance {
         static double distance(const shared_ptr<KDCoord> pt,
                                const vector<shared_ptr<KDCoord>>& line,
                                shared_ptr<KDCoord> pFoot,
-                               int32_t* pSeg, int8_t* locate, int start,
-                               int end);
+                               int32_t* pSeg, int8_t* locate, int start = 0,
+                               int end = -1);
         // default: locate=nullptr , start = 0, end = -1;
 
         static double GetDegreeDistance(double meter_dis,double lon,double lat);

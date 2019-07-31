@@ -202,7 +202,7 @@ void RoadMatch::DiffRoad2(shared_ptr<Route> route)
 void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result){
     PathEngine engine;
     engine.SetSearchCount(50);
-    if(route->id_ != 148)
+    if(route->id_ != 12)
         return;
     vector<shared_ptr<KDCoord>> dense_coord_list;
 //    double angle = geo::geo_util::calcAngle(136.232323, 39.0,
@@ -252,8 +252,6 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
             continue;
         }
 
-        if(index == 58)
-            printf("asdjf;aj;lf\n");
         double coord_angle = 0;
         if (index == 0) {
             coord_angle = geo::geo_util::calcAngle(coord->lng_, coord->lat_,
@@ -306,6 +304,24 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
 
             if(fabs(coord_angle - base_angle) > 60.0)
                 continue;
+
+            int8_t start_loc;
+            double start_dist2track = Distance::distance(road->points_[0],
+                    route->points_, nullptr, nullptr, &start_loc);
+            int8_t end_loc;
+            double end_dist2track = Distance::distance(road->points_[road->points_.size() - 1],
+                    route->points_, nullptr, nullptr, &end_loc);
+
+            if (start_loc == 0) {
+                if(start_dist2track > 10000.0)
+                    continue;
+            }
+
+            if (end_loc == 0) {
+                if(end_dist2track > 10000.0)
+                    continue;
+            }
+
 
             shared_ptr<Bind> bind = make_shared<Bind>();
             bind->query_point_ = dense_coord_list[index];
