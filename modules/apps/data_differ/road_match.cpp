@@ -202,6 +202,8 @@ void RoadMatch::DiffRoad2(shared_ptr<Route> route)
 void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result){
     PathEngine engine;
     engine.SetSearchCount(50);
+//    if(route->id_ != 148)
+//        return;
     vector<shared_ptr<KDCoord>> dense_coord_list;
 //    double angle = geo::geo_util::calcAngle(136.232323, 39.0,
 //                                            136.232323, 39.1);
@@ -249,6 +251,25 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
         if (queryObjs.size() == 0) {
             continue;
         }
+
+        double coord_angle = 0;
+        if (index == 0) {
+            coord_angle = geo::geo_util::calcAngle(coord->lng_, coord->lat_,
+                                                   dense_coord_list[1]->lng_,
+                                                   dense_coord_list[1]->lat_);
+            coord_angle = coord_angle / M_PI * 180.0;
+        } else {
+            int start_index = index - 1;
+            while(start_index-- > 0) {
+                if(Distance::distance(dense_coord_list[start_index], coord) > 1000) {
+                    coord_angle = geo::geo_util::calcAngle(dense_coord_list[start_index]->lng_,
+                                                           dense_coord_list[start_index]->lat_,
+                                                           coord->lng_, coord->lat_);
+                    coord_angle = coord_angle / M_PI * 180.0;
+                    break;
+                }
+            }
+        }
         //构建可能的候选项
         shared_ptr<CadidatesStep> step = make_shared<CadidatesStep>();
         bool valid = false;
@@ -258,6 +279,24 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
             shared_ptr<KDCoord> foot = make_shared<KDCoord>();
             double distance = Distance::distance(coord, road->points_, foot, &pos_index);
             if (distance > 100.0 * 100)
+                continue;
+
+            double base_angle = 0;
+            if(pos_index == road->points_.size() - 1) {
+                base_angle = geo::geo_util::calcAngle(road->points_[pos_index - 1]->lng_,
+                                                      road->points_[pos_index - 1]->lat_,
+                                                      road->points_[pos_index]->lng_,
+                                                      road->points_[pos_index]->lat_);
+                base_angle = base_angle / M_PI * 180.0;
+            } else {
+                base_angle = geo::geo_util::calcAngle(road->points_[pos_index]->lng_,
+                                                      road->points_[pos_index]->lat_,
+                                                      road->points_[pos_index + 1]->lng_,
+                                                      road->points_[pos_index + 1]->lat_);
+                base_angle = base_angle / M_PI * 180.0;
+            }
+
+            if(fabs(coord_angle - base_angle) > 60.0)
                 continue;
 
             shared_ptr<Bind> bind = make_shared<Bind>();
