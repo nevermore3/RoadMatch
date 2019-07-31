@@ -1,8 +1,8 @@
-# Install script for directory: /home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/differ
+# Install script for directory: /Users/liujian/Work/sdmap_diff_fusion/modules/differ
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/installed")
+  set(CMAKE_INSTALL_PREFIX "/Users/liujian/Work/sdmap_diff_fusion/cmake-build-debug/installed")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -25,11 +25,6 @@ if(NOT CMAKE_INSTALL_COMPONENT)
   else()
     set(CMAKE_INSTALL_COMPONENT)
   endif()
-endif()
-
-# Install shared libraries without execute permission?
-if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
-  set(CMAKE_INSTALL_SO_NO_EXE "1")
 endif()
 
 # Is this installation the result of a crosscompile?

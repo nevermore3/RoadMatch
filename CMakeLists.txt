@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.3)
-project(hdmap_differ_fusion C CXX)
+project(sdmap_differ_fusion C CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 

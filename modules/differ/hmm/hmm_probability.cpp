@@ -92,6 +92,7 @@ double HmmProbability::GetRoutelength(shared_ptr<Bind> sourcePosition,
                                       IManager *meshManage) {
     shared_ptr<KDRoad> source = sourcePosition->match_road_;
     shared_ptr<KDRoad> target = targetPosition->match_road_;
+
     //同一条link的处理
     if (source->id_ == target->id_ && source->mesh_id_ == target->mesh_id_) {
         if (source->direction_ == 2) {

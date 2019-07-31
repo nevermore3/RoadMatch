@@ -1,5 +1,5 @@
-/home/ubuntu/clion-2019.1.4/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/ubuntu/code/0730diff/sdmap_diff_fusion
-project[hdmap_differ_fusion] install path=/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/installed
+/Applications/CLion.app/Contents/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/liujian/Work/sdmap_diff_fusion
+project[sdmap_differ_fusion] install path=/Users/liujian/Work/sdmap_diff_fusion/cmake-build-debug/installed
 -- Configuring done
 -- Generating done
--- Build files have been written to: /home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug
+-- Build files have been written to: /Users/liujian/Work/sdmap_diff_fusion/cmake-build-debug

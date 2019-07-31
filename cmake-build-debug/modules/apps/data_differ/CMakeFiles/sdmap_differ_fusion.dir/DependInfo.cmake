@@ -4,18 +4,18 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/diff_controller.cpp" "/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/CMakeFiles/sdmap_differ_fusion.dir/diff_controller.cpp.o"
-  "/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/main.cpp" "/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/CMakeFiles/sdmap_differ_fusion.dir/main.cpp.o"
-  "/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/road_match.cpp" "/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/CMakeFiles/sdmap_differ_fusion.dir/road_match.cpp.o"
-  "/home/ubuntu/code/0730diff/sdmap_diff_fusion/modules/apps/data_differ/road_sort.cpp" "/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/CMakeFiles/sdmap_differ_fusion.dir/road_sort.cpp.o"
+  "/Users/liujian/Work/sdmap_diff_fusion/modules/apps/data_differ/diff_controller.cpp" "/Users/liujian/Work/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/CMakeFiles/sdmap_differ_fusion.dir/diff_controller.cpp.o"
+  "/Users/liujian/Work/sdmap_diff_fusion/modules/apps/data_differ/main.cpp" "/Users/liujian/Work/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/CMakeFiles/sdmap_differ_fusion.dir/main.cpp.o"
+  "/Users/liujian/Work/sdmap_diff_fusion/modules/apps/data_differ/road_match.cpp" "/Users/liujian/Work/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/CMakeFiles/sdmap_differ_fusion.dir/road_match.cpp.o"
+  "/Users/liujian/Work/sdmap_diff_fusion/modules/apps/data_differ/road_sort.cpp" "/Users/liujian/Work/sdmap_diff_fusion/cmake-build-debug/modules/apps/data_differ/CMakeFiles/sdmap_differ_fusion.dir/road_sort.cpp.o"
   )
-set(CMAKE_CXX_COMPILER_ID "GNU")
+set(CMAKE_CXX_COMPILER_ID "AppleClang")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "../../autohdmap-libs/thirdparty/platform/linux/poco/include"
-  "../../autohdmap-libs/thirdparty/platform/linux/geos/include"
-  "../../autohdmap-libs/thirdparty/platform/linux/opencv3/include"
+  "../../autohdmap-libs/thirdparty/platform/darwin/poco/include"
+  "../../autohdmap-libs/thirdparty/platform/darwin/geos/include"
+  "../../autohdmap-libs/thirdparty/platform/darwin/opencv/include"
   "../../autohdmap-libs/thirdparty/include"
   "../../autohdmap-libs/modules/server/include"
   "../../autohdmap-libs/modules/api/include"
@@ -26,7 +26,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/home/ubuntu/code/0730diff/sdmap_diff_fusion/cmake-build-debug/modules/differ/CMakeFiles/differ_engine.dir/DependInfo.cmake"
+  "/Users/liujian/Work/sdmap_diff_fusion/cmake-build-debug/modules/differ/CMakeFiles/differ_engine.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.
