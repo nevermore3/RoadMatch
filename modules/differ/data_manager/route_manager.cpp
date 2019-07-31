@@ -49,7 +49,7 @@ void RouteManager::ExtendFrom(shared_ptr<Route> route, shared_ptr<KDRoad> road)
     //遍历
     Visit(road);
     route->roads_.insert(route->roads_.begin(), road);
-    route->points_.insert(route->points_.begin(), road->points_.begin(), road->points_.end());
+    route->points_.insert(route->points_.begin(), road->points_.begin() + 1, road->points_.end());
     route->num_of_roads_++;
     route->total_length_ += road->length_;
 
@@ -61,8 +61,11 @@ void RouteManager::ExtendFrom(shared_ptr<Route> route, shared_ptr<KDRoad> road)
     shared_ptr<KDRoadNode>node = roadNodes[fromNode];
 
     // 多岔口或者死路
-    if (node->from_roads_.size() > 2 || (node->boundary_ == 0 && node->from_roads_.size() == 1))
+    if (node->from_roads_.size() > 2 || (node->boundary_ == 0 && node->from_roads_.size() == 1)) {
+        route->points_.insert(route->points_.begin(), road->points_.begin(), road->points_.begin() + 1);
         return;
+    }
+
 
     shared_ptr<KDRoad>fromRoad;
     //边界情况
@@ -81,6 +84,10 @@ void RouteManager::ExtendFrom(shared_ptr<Route> route, shared_ptr<KDRoad> road)
         cout<<"Error fromRoad !!!"<<endl;
         return;
     }
+    if (fromRoad->road_name_ != route->route_name_) {
+        route->points_.insert(route->points_.begin(), road->points_.begin(), road->points_.begin() + 1);
+        return;
+    }
     ExtendFrom(route, fromRoad);
 }
 
@@ -96,7 +103,7 @@ void RouteManager::ExtendTo(shared_ptr<Route> route, shared_ptr<KDRoad> road)
     //遍历
     Visit(road);
     route->roads_.push_back(road);
-    route->points_.insert(route->points_.end(), road->points_.begin(), road->points_.end());
+    route->points_.insert(route->points_.end(), road->points_.begin() + 1, road->points_.end());
     route->num_of_roads_++;
     route->total_length_ += road->length_;
     //
@@ -150,7 +157,7 @@ bool RouteManager::Init()
             route->roads_.push_back(roadObj);
             route->total_length_ = roadObj->length_;
             route->num_of_roads_ = 1;
-            route->points_.insert(route->points_.begin(), roadObj->points_.begin(), roadObj->points_.end());
+            route->points_.insert(route->points_.begin(), roadObj->points_.begin() + 1, roadObj->points_.end());
             route->f_node_id_ = roadObj->f_node_id_;
             route->t_node_id_ = roadObj->t_node_id_;
             // connect left
@@ -175,7 +182,12 @@ bool RouteManager::Init()
                     if (fromRoad == nullptr) {
                         cout << "Error fromRoad !!!" << endl;
                     }
+                    if (fromRoad->road_name_ != route->route_name_) {
+                        route->points_.insert(route->points_.begin(), roadObj->points_.begin(), roadObj->points_.begin() + 1);
+                    }
                     ExtendFrom(route, fromRoad);
+                } else {
+                    route->points_.insert(route->points_.begin(), roadObj->points_.begin(), roadObj->points_.begin() + 1);
                 }
             }
             //connect right
