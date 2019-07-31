@@ -258,9 +258,9 @@ bool MeshObj::BuildTopReleation() {
         if (tnodeit != road_nodes_.end()) {
             shared_ptr<KDRoadNode> node = tnodeit->second;
             node->to_roads_.emplace_back(road);
-            node->from_roads_.emplace_back(road);
-//            if(road->direction_ == 1 || road->direction_ == 0)
-//                node->from_roads_.emplace_back(road);
+//            node->from_roads_.emplace_back(road);
+            if(road->direction_ == 1 || road->direction_ == 0)
+                node->from_roads_.emplace_back(road);
         } else {
             LOG(ERROR) << "Not find node " << road->t_node_id_;
             return false;

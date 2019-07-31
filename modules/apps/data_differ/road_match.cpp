@@ -202,8 +202,8 @@ void RoadMatch::DiffRoad2(shared_ptr<Route> route)
 void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result){
     PathEngine engine;
     engine.SetSearchCount(50);
-//    if(route->id_ != 148)
-//        return;
+    if(route->id_ != 148)
+        return;
     vector<shared_ptr<KDCoord>> dense_coord_list;
 //    double angle = geo::geo_util::calcAngle(136.232323, 39.0,
 //                                            136.232323, 39.1);
@@ -252,6 +252,8 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
             continue;
         }
 
+        if(index == 58)
+            printf("asdjf;aj;lf\n");
         double coord_angle = 0;
         if (index == 0) {
             coord_angle = geo::geo_util::calcAngle(coord->lng_, coord->lat_,
@@ -266,6 +268,8 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
                                                            dense_coord_list[start_index]->lat_,
                                                            coord->lng_, coord->lat_);
                     coord_angle = coord_angle / M_PI * 180.0;
+                    if(coord_angle > 180.0)
+                        coord_angle = coord_angle - 360;
                     break;
                 }
             }
@@ -288,12 +292,16 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
                                                       road->points_[pos_index]->lng_,
                                                       road->points_[pos_index]->lat_);
                 base_angle = base_angle / M_PI * 180.0;
+                if(base_angle > 180.0)
+                    base_angle = base_angle - 360;
             } else {
                 base_angle = geo::geo_util::calcAngle(road->points_[pos_index]->lng_,
                                                       road->points_[pos_index]->lat_,
                                                       road->points_[pos_index + 1]->lng_,
                                                       road->points_[pos_index + 1]->lat_);
                 base_angle = base_angle / M_PI * 180.0;
+                if(base_angle > 180.0)
+                    base_angle = base_angle - 360;
             }
 
             if(fabs(coord_angle - base_angle) > 60.0)
