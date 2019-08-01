@@ -38,6 +38,7 @@ bool Viterbi::Compute(const list<shared_ptr<CadidatesStep>> &steplist,
 
     ++step_it;
 
+    bool is_connect = true;
     for (; step_it != steplist.end(); ++step_it) {
         shared_ptr<CadidatesStep> prev_time_step = step;
         step = *step_it;
@@ -58,7 +59,7 @@ bool Viterbi::Compute(const list<shared_ptr<CadidatesStep>> &steplist,
                 mostLikelySequence.clear();
             }
             InitalProbability(step, probablity);
-
+            is_connect = false;
             continue;
         }
         probablity = forward_result->probability_;
@@ -79,6 +80,9 @@ bool Viterbi::Compute(const list<shared_ptr<CadidatesStep>> &steplist,
 
         BuildFullPath(mostLikelySequence.sequence_, res_list, mesh_manage);
     }
+
+    if(!is_connect&&res_list.size()<3)
+        res_list.clear();
 
     return true;
 }
