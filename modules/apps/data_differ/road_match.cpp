@@ -36,11 +36,23 @@ using namespace std;
 bool RoadMatch::MatchProcess()
 {
     cout<<"Start Match Process"<<endl;
+
+    //查找新增的road
+    MatchAdd();
+    //查找删除的road
+    //MatchDelete();
+
+    Statistic();
+    GlobalCache *globalCache = GlobalCache::GetInstance();
+    string output = globalCache->out_path();
+    OutputRoad(output);
+    return true;
+}
+
+void RoadMatch::MatchAdd()
+{
     MeshManager *src = MeshManager::GetInstance();
-    DiffDataManager *dest = DiffDataManager::GetInstance();
-
     RouteManager *routeManager = RouteManager::GetInstance();
-
     // 查找新增的road
     for (const auto &route : routeManager->routes_) {
         shared_ptr<Route>routeObj = route.second;
@@ -57,23 +69,52 @@ bool RoadMatch::MatchProcess()
             queryObjs.push_back(src->meshs_[road->mesh_id_]->roads_[road->id_]);
         }
 
-
         if (queryObjs.empty()) {
             for (auto road : routeObj->roads_) {
                 AddRoad(road);
             }
         } else {
-            //if (routeObj->id_ == 370)
-                DiffRoad(routeObj);
+            //if (routeObj->id_ == 181)
+            DiffRoad(routeObj);
         }
     }
-    
-    Statistic();
-    GlobalCache *globalCache = GlobalCache::GetInstance();
-    string output = globalCache->out_path();
-    OutputRoad(output);
-    return true;
 }
+
+void RoadMatch::MatchDelete()
+{
+    MeshManager *src = MeshManager::GetInstance();
+    DiffDataManager *dest = DiffDataManager::GetInstance();
+
+    for (auto srcMesh : src->meshs_) {
+        string meshID = srcMesh.first;
+        for (auto srcRoad : srcMesh.second->roads_) {
+            shared_ptr<KDRoad>srcRoadObj = srcRoad.second;
+
+            // get buffer in dest
+            double bufferSize = 20;
+            vector<void *>temp;
+            shared_ptr<LineString>searchLine = GeometryUtil::CreateLineString(srcRoadObj->points_);
+            shared_ptr<geos::geom::Geometry> geom_buffer(searchLine->buffer(bufferSize));
+            dest->strtree_->query(geom_buffer->getEnvelopeInternal(), temp);
+
+            vector<shared_ptr<KDRoad>>queryObjs;
+            for (auto i : temp) {
+                auto *road = static_cast<KDRoad *>(i);
+                queryObjs.push_back(dest->meshs_[road->mesh_id_]->roads_[road->id_]);
+            }
+
+            if (queryObjs.empty()) {
+                //delete road
+                DeleteRoad(srcRoadObj);
+            } else {
+
+            }
+
+        }
+    }
+}
+
+
 
 bool RoadMatch::CheckMatchRoad(vector<shared_ptr<KDCoord>> &road, shared_ptr<Route> baseRoute)
 {
@@ -133,9 +174,9 @@ bool RoadMatch::CheckMatchRoad(vector<shared_ptr<KDCoord>> &road, shared_ptr<Rou
             auto *route = static_cast<Route *>(i);
             shared_ptr<Route> routeObj = routeManager->routes_[route->key_name_];
             double dis = Distance::distance(endPoint, route->points_, nullptr, nullptr, nullptr, 0, -1) / 100;
-            shared_ptr<QueryRoute> queryRoad (new QueryRoute(routeObj));
-            queryRoad->end_distance_ = dis;
-            endRoutes.push_back(queryRoad);
+            shared_ptr<QueryRoute> queryRoute (new QueryRoute(routeObj));
+            queryRoute->end_distance_ = dis;
+            endRoutes.push_back(queryRoute);
         }
         FilterRoad(endRoutes, 1);
     }
@@ -219,7 +260,7 @@ void RoadMatch::DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result
         distance = Distance::distance(route->points_[i], matchRoad, foot, &posIndex, &locate, 0, -1) / 100;
         if ((locate == 0  && distance < threshold) ) {
             if (count != 0) {
-                if (count >=2 && tempLength > 20) {
+                if (count >=2 && tempLength > 100) {
                     shared_ptr<KDRoad>newRoad  = make_shared<KDRoad>();
                     newRoad->points_.swap(newPoints);
                     newRoad->length_ = tempLength;
@@ -268,25 +309,33 @@ void RoadMatch::DiffRoad(shared_ptr<Route> route)
         return;
     }
 
-    //若匹配到的roads的总长度和route的长度 远远不成比例则认为新增
-//    double distance = 0;
-//    for (const auto &road : result) {
-//        distance += road->length_;
-//    }
-//    double value1 = abs(distance - route->total_length_) / distance;
-//    double value2 = abs(distance - route->total_length_) / route->total_length_;
 
-//    if (value1 > 6 || value2 > 6) {
-//        for (const auto &road : route->roads_) {
-//            AddRoad(road);
-//        }
-//    } else {
-//        DoDiff(route, result);
-//    }
     // 如果result.size == 1 可以通过角度判断是否新增
     if (result.size() == 1) {
         // 计算两条route的角度
-        //TODO
+        double routeAngle = geo::geo_util::calcAngle(route->points_.front()->lng_,
+                                                     route->points_.front()->lat_,
+                                                     route->points_.back()->lng_,
+                                                     route->points_.back()->lat_);
+
+        routeAngle = routeAngle / M_PI * 180.0;
+        routeAngle = (routeAngle > 180.0) ? (routeAngle - 360) : routeAngle;
+
+        double matchAngle = geo::geo_util::calcAngle(result.front()->points_.front()->lng_,
+                                                     result.front()->points_.front()->lat_,
+                                                     result.front()->points_.back()->lng_,
+                                                     result.front()->points_.back()->lat_);
+        matchAngle = matchAngle / M_PI * 180.0;
+        matchAngle = (matchAngle > 180.0) ? (matchAngle - 360) : matchAngle;
+
+        if (abs(matchAngle - routeAngle) > 45.0) {
+            // 非一条route
+            for (const auto &road : route->roads_) {
+                AddRoad(road);
+            }
+            return;
+        }
+
         if (CheckMatchRoad(result.front()->points_, route))
             return;
     }
@@ -567,6 +616,21 @@ void RoadMatch::AddRoad(shared_ptr<KDRoad> newRoad)
         meshs_.insert(make_pair(newRoad->mesh_id_, meshObj));
     }
 }
+
+void RoadMatch::DeleteRoad(shared_ptr<KDRoad> deleteRoad){
+    shared_ptr<MeshObj>meshObj;
+    if (meshs_.find(deleteRoad->mesh_id_) != meshs_.end()) {
+        meshObj = meshs_[deleteRoad->mesh_id_];
+    } else {
+        meshObj = make_shared<MeshObj>();
+    }
+    meshObj->roads_.insert(make_pair(deleteRoad->id_, deleteRoad));
+    if (meshs_.find(deleteRoad->mesh_id_) == meshs_.end()) {
+        meshs_.insert(make_pair(deleteRoad->mesh_id_, meshObj));
+    }
+}
+
+
 
 
 void RoadMatch::OutputRoad(const string &path)

@@ -21,30 +21,28 @@ public:
 
     bool MatchProcess();
 
-    void MatchRoute(shared_ptr<Route>route);
-
     void CloseRoute(shared_ptr<Route>route, list<shared_ptr<KDRoad>> &result);
-
-    void AddRoad(shared_ptr<KDRoad>newRoad);
 
     void DiffRoad(shared_ptr<Route>route);
     void DiffRoad2(shared_ptr<Route>route);
-//
-//    void DeleteRoad(shared_ptr<KDRoad>deleteRoad, string meshID);
-//
-//    void UpdateRoad(shared_ptr<KDRoad>updateRoad, string meshID);
-//
+
+
+    void MatchAdd();
+
+    void MatchDelete();
+
     void OutputRoad(const string &path);
-//
+
     void Statistic();
 
     void DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result);
 private:
     // 按照mesh管理的
     unordered_map<string, shared_ptr<MeshObj>> meshs_;
-//    void PreProcess();
-//
-//    RoadMatch() = default;
+
+    void DeleteRoad(shared_ptr<KDRoad> road);
+
+    void AddRoad(shared_ptr<KDRoad>newRoad);
 
     bool CheckMatchRoad(vector<shared_ptr<KDCoord>> &road, shared_ptr<Route> route);
 };
