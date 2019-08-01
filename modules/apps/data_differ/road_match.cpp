@@ -369,6 +369,14 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
 //    double angle = geo::geo_util::calcAngle(136.232323, 39.0,
 //                                            136.232323, 39.1);
 
+
+    double ht_dist = Distance::distance(route->points_[0]->lng_, route->points_[0]->lat_,
+                                        route->points_[route->points_.size() - 1]->lng_,
+                                        route->points_[route->points_.size() - 1]->lat_) / 100;
+    bool slip = false;
+    if(ht_dist < 200.0 && route->total_length_ / ht_dist > 3.0)
+        slip = true;
+
     for(size_t i = 0; i < route->points_.size() - 1; ++i) {
         auto coord1 = route->points_[i];
         auto coord2 = route->points_[i+1];
@@ -393,7 +401,6 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
                 bBreak = true;
         }
         dense_coord_list.emplace_back(coord2);
-
     }
 
     //IManager* mesh_manage_ = data_manager.base_data_manager_;
@@ -537,7 +544,7 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
     cout<<"route' size : "<<route->roads_.size()<<endl;
     //list<shared_ptr<KDRoad>> res_list;
     Viterbi viterbi;
-    viterbi.Compute(stepList.step_list_, false, result, mesh_manage_);
+    viterbi.Compute(stepList.step_list_, false, result, mesh_manage_, slip);
 
     string output_path = GlobalCache::GetInstance()->out_path();
     string outputPath = output_path + "/test";

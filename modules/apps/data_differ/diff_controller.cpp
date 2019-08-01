@@ -210,7 +210,7 @@ bool DiffController::Differing() {
     cout<<"result: "<<result.size()<<endl;
     list<shared_ptr<KDRoad>> res_list;
     Viterbi viterbi;
-    viterbi.Compute(stepList.step_list_, false, res_list, mesh_manage_);
+    viterbi.Compute(stepList.step_list_, false, res_list, mesh_manage_, false);
 
     list<shared_ptr<KDRoad>> match_list;
 

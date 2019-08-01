@@ -41,7 +41,7 @@ public:
     bool Compute(const list<shared_ptr<CadidatesStep>> &steplist,
                  bool keepMessageHistory,
                  list<shared_ptr<KDRoad>> &res_list,
-                 IManager *mesh_manage);
+                 IManager *mesh_manage, bool slip);
 
     bool InitalProbability(shared_ptr<CadidatesStep> firstTimeStep,
                            unordered_map<shared_ptr<Bind>, double> &probablity);
