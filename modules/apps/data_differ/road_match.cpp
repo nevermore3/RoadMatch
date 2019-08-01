@@ -45,6 +45,7 @@ bool RoadMatch::MatchProcess()
     // 查找新增的road
     for (auto route : routeManager->routes_) {
         shared_ptr<Route>routeObj = route.second;
+
         double bufferSize = 20;
         vector<void *>temp;
         shared_ptr<LineString>searchLine = GeometryUtil::CreateLineString(routeObj->points_);
@@ -64,7 +65,7 @@ bool RoadMatch::MatchProcess()
                 AddRoad(road);
             }
         } else {
-            //if (routeObj->id_ == 338)
+            //if (routeObj->id_ == 369)
                 DiffRoad(routeObj);
         }
     }
@@ -79,7 +80,6 @@ bool RoadMatch::MatchProcess()
 
 void RoadMatch::DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result)
 {
-
     //合成一条route
     vector<shared_ptr<Points>>matchRoute;
 
@@ -99,7 +99,7 @@ void RoadMatch::DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result
     }
     if (matchRoute.size() != route->points_.size()) {
         cout<<"ERROR !!!!!"<<endl;
-        //assert(0);
+        assert(0);
     }
 
 
@@ -169,11 +169,10 @@ void RoadMatch::DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result
     if (count >= 0  &&  tempLength > 20) {
         shared_ptr<KDRoad>newRoad  = make_shared<KDRoad>();
         newRoad->points_.swap(newPoints);
-//        newRoad->length_ = tempLength;
-//        newRoad->id_ = matchRoute[i]->road_->id_;
-//        newRoad->mesh_id_ = matchRoute[i]->road_->mesh_id_;
-//        AddRoad(newRoad);
-        cout<<"fuck"<<endl;
+        newRoad->length_ = tempLength;
+        newRoad->id_ = matchRoute[i - 1]->road_->id_;
+        newRoad->mesh_id_ = matchRoute[i - 1]->road_->mesh_id_;
+        AddRoad(newRoad);
     }
 
 }
@@ -189,14 +188,16 @@ void RoadMatch::DiffRoad(shared_ptr<Route> route)
         }
         return;
     }
-    // 计算匹配到的roads 和route的差分
 
     //若匹配到的roads的总长度和route的长度 远远不成比例则认为新增
     double distance = 0;
     for (const auto &road : result) {
         distance += road->length_;
     }
-    if (abs(distance - route->total_length_) / distance > 1.5) {
+    double value1 = abs(distance - route->total_length_) / distance;
+    double value2 = abs(distance - route->total_length_) / route->total_length_;
+
+    if (value1 > 2 || value2 > 2) {
         for (const auto &road : route->roads_) {
             AddRoad(road);
         }

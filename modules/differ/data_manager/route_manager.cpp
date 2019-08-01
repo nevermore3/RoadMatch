@@ -46,27 +46,38 @@ void RouteManager::ExtendFrom(shared_ptr<Route> route, shared_ptr<KDRoad> road)
     if (IsVisit(road) || road->road_name_ != route->route_name_)
         return;
 
+    //前一条road
+    shared_ptr<KDRoad> preRoad = route->roads_.front();
+
     //遍历
     Visit(road);
     route->roads_.insert(route->roads_.begin(), road);
-    route->points_.insert(route->points_.begin(), road->points_.begin() + 1, road->points_.end());
+    //preRoad->f_node == road->f_node
+    if (preRoad->f_node_id_ == road->f_node_id_) {
+        route->points_.insert(route->points_.begin(), road->points_.rbegin() + 1, road->points_.rend());
+    } else {
+        route->points_.insert(route->points_.begin(), road->points_.begin() + 1, road->points_.end());
+    }
     route->num_of_roads_++;
     route->total_length_ += road->length_;
 
-    //
-    route->f_node_id_ = road->f_node_id_;
-    route->start_point_ = meshs_[road->mesh_id_]->road_nodes_[road->f_node_id_];
+    //preRoad->f_node == road->f_node
+    route->f_node_id_ = (preRoad->f_node_id_ == road->f_node_id_) ? road->t_node_id_ : road->f_node_id_;
+    route->start_point_ = meshs_[road->mesh_id_]->road_nodes_[route->f_node_id_];
 
-    int64_t  fromNode = road->f_node_id_;
+    int64_t  fromNode = route->f_node_id_;
     unordered_map<int32_t, shared_ptr<KDRoadNode>> roadNodes = meshs_[road->mesh_id_]->road_nodes_;
     shared_ptr<KDRoadNode>node = roadNodes[fromNode];
 
     // 多岔口或者死路
     if (node->from_roads_.size() > 2 || (node->boundary_ == 0 && node->from_roads_.size() == 1)) {
-        route->points_.insert(route->points_.begin(), road->points_.begin(), road->points_.begin() + 1);
+        if (preRoad->f_node_id_ == road->f_node_id_) {
+            route->points_.insert(route->points_.begin(), road->points_.rbegin(), road->points_.rbegin() + 1);
+        } else {
+            route->points_.insert(route->points_.begin(), road->points_.begin(), road->points_.begin() + 1);
+        }
         return;
     }
-
 
     shared_ptr<KDRoad>fromRoad;
     //边界情况
@@ -86,7 +97,11 @@ void RouteManager::ExtendFrom(shared_ptr<Route> route, shared_ptr<KDRoad> road)
         return;
     }
     if (fromRoad->road_name_ != route->route_name_) {
-        route->points_.insert(route->points_.begin(), road->points_.begin(), road->points_.begin() + 1);
+        if (preRoad->f_node_id_ == road->f_node_id_) {
+            route->points_.insert(route->points_.begin(), road->points_.rbegin(), road->points_.rbegin() + 1);
+        } else {
+            route->points_.insert(route->points_.begin(), road->points_.begin(), road->points_.begin() + 1);
+        }
         return;
     }
     ExtendFrom(route, fromRoad);
@@ -101,17 +116,25 @@ void RouteManager::ExtendTo(shared_ptr<Route> route, shared_ptr<KDRoad> road)
     if (IsVisit(road) || road->road_name_ != route->route_name_)
         return;
 
+    //前一条road
+    shared_ptr<KDRoad>preRoad = route->roads_.back();
+
     //遍历
     Visit(road);
     route->roads_.push_back(road);
-    route->points_.insert(route->points_.end(), road->points_.begin() + 1, road->points_.end());
+    //preRoad->to_node == road->to_node
+    if (preRoad->t_node_id_ == road->t_node_id_) {
+        route->points_.insert(route->points_.end(), road->points_.rbegin() + 1, road->points_.rend());
+    } else {
+        route->points_.insert(route->points_.end(), road->points_.begin() + 1, road->points_.end());
+    }
     route->num_of_roads_++;
     route->total_length_ += road->length_;
-    //
-    route->t_node_id_ = road->t_node_id_;
-    route->end_point_ = meshs_[road->mesh_id_]->road_nodes_[road->t_node_id_];
+    //preRoad->to_node == road->to_node
+    route->t_node_id_ = (preRoad->t_node_id_ == road->t_node_id_) ? road->f_node_id_ : road->t_node_id_;
+    route->end_point_ = meshs_[road->mesh_id_]->road_nodes_[route->t_node_id_];
 
-    int64_t  toNode = road->t_node_id_;
+    int64_t  toNode = route->t_node_id_;
     unordered_map<int32_t, shared_ptr<KDRoadNode>> roadNodes = meshs_[road->mesh_id_]->road_nodes_;
     shared_ptr<KDRoadNode>node = roadNodes[toNode];
 
@@ -235,7 +258,7 @@ void RouteManager::LoadRoute()
     SetMesh(diffDataManager->meshs_);
 
     Init();
-    //cout<<"route ' size is "<<routes_.size()<<endl;
+    cout<<"route ' size is "<<routes_.size()<<endl;
     string output = GlobalCache::GetInstance()->out_path();
     OutputRoad(output);
     OutputNode(output);
