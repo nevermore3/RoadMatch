@@ -11,8 +11,9 @@
 #include <memory>
 #include <map>
 #include "data_types.h"
+#include "geos/indexStrtree.h"
 using namespace std;
-
+using namespace geos::index::strtree;
 class MeshObj;
 class Route;
 
@@ -34,12 +35,16 @@ public:
         meshs_ = std::move(mesh);
     }
 
+    shared_ptr<STRtree> strtree_;
+
     unordered_map<string, shared_ptr<Route>>routes_;
 
     unordered_map<string, shared_ptr<MeshObj>> meshs_;
 
 protected:
-
+    RouteManager() {
+        strtree_ = make_shared<geos::index::strtree::STRtree>();
+    }
 
 private:
     void OutputRoad(const string &filename);
@@ -77,6 +82,8 @@ public:
     vector<shared_ptr<KDRoad>>roads_;
 
     double total_length_;
+
+    shared_ptr<LineString> line_;
 
     vector<shared_ptr<KDCoord>> points_;
 

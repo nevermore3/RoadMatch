@@ -43,7 +43,7 @@ bool RoadMatch::MatchProcess()
     RouteManager *routeManager = RouteManager::GetInstance();
 
     // 查找新增的road
-    for (auto route : routeManager->routes_) {
+    for (const auto &route : routeManager->routes_) {
         shared_ptr<Route>routeObj = route.second;
         double bufferSize = 20;
         vector<void *>temp;
@@ -64,7 +64,7 @@ bool RoadMatch::MatchProcess()
                 AddRoad(road);
             }
         } else {
-            //if (routeObj->id_ == 338)
+            if (routeObj->id_ == 370)
                 DiffRoad(routeObj);
         }
     }
@@ -76,11 +76,89 @@ bool RoadMatch::MatchProcess()
     return true;
 }
 
+bool RoadMatch::CheckMatchRoad(vector<shared_ptr<KDCoord>> &road, shared_ptr<Route> baseRoute)
+{
+    // 先检查是否route 太短 造成road两端都无法匹配到route
+    size_t  count = 0;   //匹配上的形点个数
+    size_t  totalCount = 0;  //总的形点个数
+    int8_t locate = 0;
+    double distance = 0;
+
+    for (size_t i = 0; i < baseRoute->points_.size(); i++) {
+        distance = Distance::distance(baseRoute->points_[i], road, nullptr, nullptr, &locate, 0, -1) / 100;
+        if (locate == 0 && distance < 20) {
+            count++;
+        }
+        totalCount++;
+    }
+    double t = static_cast<double>(count) / totalCount;
+    if (t > 0.8)
+        return true;
+
+    RouteManager *routeManager = RouteManager::GetInstance();
+
+    shared_ptr<KDCoord>startPoint = road.front();
+    shared_ptr<KDCoord>endPoint = road.back();
+    vector<shared_ptr<QueryRoute>>startRoutes;
+    vector<shared_ptr<QueryRoute>>endRoutes;
+
+    double bufferSize = 20;
+    // 起始点最近的3条route
+    {
+        shared_ptr<Point> point = GeometryUtil::CreatePoint(startPoint);
+        shared_ptr<geos::geom::Geometry> geom_buffer(point->buffer(bufferSize));
+        //query
+        vector<void *> queryObjs;
+        routeManager->strtree_->query(geom_buffer->getEnvelopeInternal(), queryObjs);
+        for (auto i : queryObjs) {
+            auto *route = static_cast<Route *>(i);
+            shared_ptr<Route> routeObj = routeManager->routes_[route->key_name_];
+            double dis = Distance::distance(startPoint, route->points_, nullptr, nullptr, nullptr, 0, -1) / 100;
+
+            shared_ptr<QueryRoute> queryRoute (new QueryRoute(routeObj));
+            queryRoute->start_distance_ = dis;
+
+            startRoutes.push_back(queryRoute);
+        }
+        FilterRoad(startRoutes, 0);
+    }
+
+    // 终止点最近的3条route
+    {
+        shared_ptr<Point> point = GeometryUtil::CreatePoint(endPoint);
+        shared_ptr<geos::geom::Geometry> geom_buffer(point->buffer(bufferSize));
+        //query
+        vector<void *> queryObjs;
+        routeManager->strtree_->query(geom_buffer->getEnvelopeInternal(), queryObjs);
+        for (auto i : queryObjs) {
+            auto *route = static_cast<Route *>(i);
+            shared_ptr<Route> routeObj = routeManager->routes_[route->key_name_];
+            double dis = Distance::distance(endPoint, route->points_, nullptr, nullptr, nullptr, 0, -1) / 100;
+            shared_ptr<QueryRoute> queryRoad (new QueryRoute(routeObj));
+            queryRoad->end_distance_ = dis;
+            endRoutes.push_back(queryRoad);
+        }
+        FilterRoad(endRoutes, 1);
+    }
+
+    // 判断是否是同一条route
+    if (!startRoutes.empty() && !endRoutes.empty()) {
+        shared_ptr<Route>sRoute = startRoutes.front()->route_;
+        shared_ptr<Route>eRoute = endRoutes.front()->route_;
+        //都没有匹配同一条route，则认为是新增
+        if (sRoute != baseRoute && eRoute != baseRoute) {
+            for (auto roadObj : baseRoute->roads_) {
+                AddRoad(roadObj);
+            }
+            return true;
+        }
+    }
+    return false;
+
+}
 
 void RoadMatch::DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result)
 {
-
-    //合成一条route
     vector<shared_ptr<Points>>matchRoute;
 
     for (size_t i = 0; i < route->num_of_roads_; i++) {
@@ -102,8 +180,7 @@ void RoadMatch::DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result
         assert(0);
     }
 
-
-
+    //合成一条route
     vector<shared_ptr<KDCoord>>matchRoad;
     auto iter = result.begin();
     while (iter != result.end()) {
@@ -115,6 +192,10 @@ void RoadMatch::DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result
         }
         iter++;
     }
+
+//    if (CheckMatchRoad(matchRoad, route)) {
+//        return;
+//    }
 
     // 两条route之间的比较
     double threshold = 20;
@@ -137,7 +218,7 @@ void RoadMatch::DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result
         }
         current = route->points_[i];
         distance = Distance::distance(route->points_[i], matchRoad, foot, &posIndex, &locate, 0, -1) / 100;
-        if ((locate == 0  && distance < threshold) || (distance < 10)) {
+        if ((locate == 0  && distance < threshold) ) {
             if (count != 0) {
                 if (count >=2 && tempLength > 20) {
                     shared_ptr<KDRoad>newRoad  = make_shared<KDRoad>();
@@ -158,7 +239,7 @@ void RoadMatch::DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result
 
         if (locate != 0 || distance > threshold) {
             if (count != 0) {
-                tempLength += Distance::distance(pre, current);
+                tempLength += Distance::distance(pre, current) / 100;
             }
             count++;
             newPoints.push_back(route->points_[i]);
@@ -179,7 +260,6 @@ void RoadMatch::DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result
 
 void RoadMatch::DiffRoad(shared_ptr<Route> route)
 {
-
     list<shared_ptr<KDRoad>> result;
     CloseRoute(route, result);
     if (result.empty()) {
@@ -188,42 +268,31 @@ void RoadMatch::DiffRoad(shared_ptr<Route> route)
         }
         return;
     }
-    // 计算匹配到的roads 和route的差分
 
     //若匹配到的roads的总长度和route的长度 远远不成比例则认为新增
-    double distance = 0;
-    for (const auto &road : result) {
-        distance += road->length_;
-    }
-    double value1 = abs(distance - route->total_length_) / distance;
-    double value2 = abs(distance - route->total_length_) / route->total_length_;
+//    double distance = 0;
+//    for (const auto &road : result) {
+//        distance += road->length_;
+//    }
+//    double value1 = abs(distance - route->total_length_) / distance;
+//    double value2 = abs(distance - route->total_length_) / route->total_length_;
 
-    if (value1 > 2 || value2 > 2) {
-        for (const auto &road : route->roads_) {
-            AddRoad(road);
-        }
-    } else {
-        DoDiff(route, result);
+//    if (value1 > 6 || value2 > 6) {
+//        for (const auto &road : route->roads_) {
+//            AddRoad(road);
+//        }
+//    } else {
+//        DoDiff(route, result);
+//    }
+    // 如果result.size == 1 可以通过角度判断是否新增
+    if (result.size() == 1) {
+        // 计算两条route的角度
+        //TODO
+        if (CheckMatchRoad(result.front()->points_, route))
+            return;
     }
 
-}
-
-void RoadMatch::FilterRoad(vector<shared_ptr<QueryRoad>> array, int flag)
-{
-    Compare compare(flag);
-    sort(array.begin(), array.end(), compare);
-    //保留前count个
-    size_t count = 3;
-    size_t i = 1;
-    auto iter = array.begin();
-    while (iter != array.end()) {
-        if (i > count || (*iter)->start_distance_ == DBL_MAX) {
-            iter = array.erase(iter);
-        } else {
-            i++;
-            iter++;
-        }
-    }
+    DoDiff(route, result);
 }
 
 void RoadMatch::DiffRoad2(shared_ptr<Route> route)

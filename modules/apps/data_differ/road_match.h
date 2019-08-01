@@ -45,9 +45,8 @@ private:
 //    void PreProcess();
 //
 //    RoadMatch() = default;
-//    void DiffRoad(const shared_ptr<KDRoad> &road, vector<shared_ptr<KDRoad>> &obj, IManager *dataManager);
-    void FilterRoad(vector<shared_ptr<QueryRoad>>array, int flag);
 
+    bool CheckMatchRoad(vector<shared_ptr<KDCoord>> &road, shared_ptr<Route> route);
 };
 
 

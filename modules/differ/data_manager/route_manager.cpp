@@ -3,10 +3,14 @@
 //
 
 #include "route_manager.h"
-
+#include "geos/geom/Coordinate.h"
+#include "geos/geom/GeometryFactory.h"
+#include "geos/geom/CoordinateSequence.h"
+#include "geos/geom/CoordinateArraySequence.h"
+#include "geos/geom/Point.h"
 #include "data_types.h"
 #include "mesh_manager.h"
-
+#include <mvg/Coordinates.hpp>
 #include "glog/logging.h"
 #include "glog/log_severity.h"
 #include "global_cache.h"
@@ -18,6 +22,7 @@
 #include <shp/ShpData.hpp>
 #include "diff_data_manager.h"
 using namespace std;
+using namespace kd::automap;
 
 int64_t RouteManager::route_id_ = 0;
 
@@ -164,6 +169,8 @@ void RouteManager::ExtendTo(shared_ptr<Route> route, shared_ptr<KDRoad> road)
 
 bool RouteManager::Init()
 {
+    const geos::geom::GeometryFactory *gf = geos::geom::GeometryFactory::getDefaultInstance();
+
     for (const auto &mesh : meshs_) {
         for (const auto &road : mesh.second->roads_) {
             shared_ptr<KDRoad> roadObj = road.second;
@@ -241,6 +248,17 @@ bool RouteManager::Init()
                     ExtendTo(route, toRoad);
                 }
             }
+
+            CoordinateSequence *cl = new CoordinateArraySequence();
+            for (size_t i = 0; i < route->points_.size(); i++) {
+                double utmX, utmY;
+                char zone[4] = {0};
+                Coordinates::ll2utm(route->points_[i]->lat_, route->points_[i]->lng_, utmX, utmY, zone);
+                cl->add(Coordinate(utmX, utmY, -1));
+            }
+            route->line_.reset(gf->createLineString(cl));
+            strtree_->insert(route->line_->getEnvelopeInternal(), route.get());
+
             route->key_name_ = name + to_string(route->total_length_);
             if (routes_.find(route->key_name_) != routes_.end()) {
                 cout<<"ERROR !!! key name "<<endl;
