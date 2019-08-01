@@ -23,7 +23,6 @@
 #include "hmm/viterbi.h"
 #include "road_sort.h"
 
-
 #include <shp/ShpData.hpp>
 #include <geom/geo_util.h>
 
@@ -64,7 +63,7 @@ bool RoadMatch::MatchProcess()
                 AddRoad(road);
             }
         } else {
-            if (routeObj->id_ == 370)
+            //if (routeObj->id_ == 370)
                 DiffRoad(routeObj);
         }
     }
@@ -434,6 +433,7 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
                 }
             }
         }
+
         //构建可能的候选项
         shared_ptr<CadidatesStep> step = make_shared<CadidatesStep>();
         bool valid = false;
@@ -464,7 +464,12 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
                     base_angle = base_angle - 360;
             }
 
-            if(fabs(coord_angle - base_angle) > 45.0)
+            double angle_diff = fabs(coord_angle - base_angle);
+
+            if (angle_diff > 180) {
+                angle_diff = 360 - angle_diff;
+            }
+            if(angle_diff > 45.0)
                 continue;
 
             int8_t start_loc;
