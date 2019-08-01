@@ -57,16 +57,15 @@ bool RoadMatch::MatchProcess()
             auto *road = static_cast<KDRoad *>(i);
             queryObjs.push_back(src->meshs_[road->mesh_id_]->roads_[road->id_]);
         }
-        if (routeObj->id_ == 343) {
-            cout<<"here"<<endl;
-        }
+
 
         if (queryObjs.empty()) {
             for (auto road : routeObj->roads_) {
                 AddRoad(road);
             }
         } else {
-            DiffRoad(routeObj);
+            //if (routeObj->id_ == 338)
+                DiffRoad(routeObj);
         }
     }
     
@@ -80,9 +79,101 @@ bool RoadMatch::MatchProcess()
 
 void RoadMatch::DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result)
 {
-    vector<shared_ptr<KDCoord>>points = route->points_;
-    for (auto point : points) {
 
+    //合成一条route
+    vector<shared_ptr<Points>>matchRoute;
+
+    for (size_t i = 0; i < route->num_of_roads_; i++) {
+        shared_ptr<KDRoad>road = route->roads_[i];
+        if (i == route->num_of_roads_ - 1) {
+            for (size_t j = 0; j < road->points_.size(); j++) {
+                shared_ptr<Points>newPoint = make_shared<Points>(road->points_[j], road);
+                matchRoute.push_back(newPoint);
+            }
+        } else {
+            for (size_t j = 0; j < road->points_.size() - 1; j++) {
+                shared_ptr<Points>newPoint = make_shared<Points>(road->points_[j], road);
+                matchRoute.push_back(newPoint);
+            }
+        }
+    }
+    if (matchRoute.size() != route->points_.size()) {
+        cout<<"ERROR !!!!!"<<endl;
+        //assert(0);
+    }
+
+
+
+    vector<shared_ptr<KDCoord>>matchRoad;
+    auto iter = result.begin();
+    while (iter != result.end()) {
+        auto iter2 = iter;
+        if (++iter2 == result.end()) {
+            matchRoad.insert(matchRoad.end(), (*iter)->points_.begin(), (*iter)->points_.end());
+        } else {
+            matchRoad.insert(matchRoad.end(), (*iter)->points_.begin(), (*iter)->points_.end() - 1);
+        }
+        iter++;
+    }
+
+    // 两条route之间的比较
+    double threshold = 20;
+    double distance = 0;
+    int8_t  locate = 0;
+    int32_t posIndex = 0;
+    shared_ptr<KDCoord> foot = make_shared<KDCoord>();
+    size_t count = 0;
+    double tempLength = 0;
+
+    shared_ptr<KDCoord>pre = nullptr;
+    shared_ptr<KDCoord>current = nullptr;
+    vector<shared_ptr<KDCoord>>newPoints;
+
+    size_t  i = 0;
+
+    for (; i < route->points_.size(); i++) {
+        if (i != 0) {
+            pre = current;
+        }
+        current = route->points_[i];
+        distance = Distance::distance(route->points_[i], matchRoad, foot, &posIndex, &locate, 0, -1) / 100;
+        if ((locate == 0  && distance < threshold) || (distance < 10)) {
+            if (count != 0) {
+                if (count >=2 && tempLength > 20) {
+                    shared_ptr<KDRoad>newRoad  = make_shared<KDRoad>();
+                    newRoad->points_.swap(newPoints);
+                    newRoad->length_ = tempLength;
+                    newRoad->id_ = matchRoute[i]->road_->id_;
+                    newRoad->mesh_id_ = matchRoute[i]->road_->mesh_id_;
+                    AddRoad(newRoad);
+                } else {
+                    //tempLength太小的忽略不记为新增
+                    vector<shared_ptr<KDCoord>>().swap(newPoints);
+                }
+                count = 0;
+                tempLength = 0;
+            }
+            continue;
+        }
+
+        if (locate != 0 || distance > threshold) {
+            if (count != 0) {
+                tempLength += Distance::distance(pre, current);
+            }
+            count++;
+            newPoints.push_back(route->points_[i]);
+        }
+
+    }
+
+    if (count >= 0  &&  tempLength > 20) {
+        shared_ptr<KDRoad>newRoad  = make_shared<KDRoad>();
+        newRoad->points_.swap(newPoints);
+//        newRoad->length_ = tempLength;
+//        newRoad->id_ = matchRoute[i]->road_->id_;
+//        newRoad->mesh_id_ = matchRoute[i]->road_->mesh_id_;
+//        AddRoad(newRoad);
+        cout<<"fuck"<<endl;
     }
 
 }
@@ -201,9 +292,9 @@ void RoadMatch::DiffRoad2(shared_ptr<Route> route)
 
 void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result){
     PathEngine engine;
-    engine.SetSearchCount(50);
-    if(route->id_ != 12)
-        return;
+    engine.SetSearchCount(20);
+//    if(route->id_ != 12)
+//        return;
     vector<shared_ptr<KDCoord>> dense_coord_list;
 //    double angle = geo::geo_util::calcAngle(136.232323, 39.0,
 //                                            136.232323, 39.1);
@@ -213,7 +304,7 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
         auto coord2 = route->points_[i+1];
         if(i == 0)
             dense_coord_list.emplace_back(coord1);
-        if(Distance::distance(coord1, coord2) < 1000) {
+        if(Distance::distance(coord1, coord2) < 5000) {
             dense_coord_list.emplace_back(coord2);
             continue;
         }
@@ -224,11 +315,11 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
         while(!bBreak) {
             cnt++;
             shared_ptr<KDCoord> coord = make_shared<KDCoord>();
-            coord->lng_ = coord1->lng_ + cnt * 10.0 *cos(angle)/110000;
-            coord->lat_ = coord1->lat_ + cnt * 10.0 *sin(angle)/110000;
+            coord->lng_ = coord1->lng_ + cnt * 50.0 *cos(angle)/110000;
+            coord->lat_ = coord1->lat_ + cnt * 50.0 *sin(angle)/110000;
             dense_coord_list.emplace_back(coord);
 
-            if(Distance::distance(coord, coord2) < 1000)
+            if(Distance::distance(coord, coord2) < 5000)
                 bBreak = true;
         }
         dense_coord_list.emplace_back(coord2);
@@ -244,7 +335,7 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
         shared_ptr<KDCoord> coord = dense_coord_list[index];
 
         shared_ptr<Point> point(GeometryUtil::CreatePoint(coord));
-        shared_ptr<geos::geom::Geometry> geom_buffer(point->buffer(100.0));
+        shared_ptr<geos::geom::Geometry> geom_buffer(point->buffer(50.0));
         vector<void *> queryObjs;
         mesh_manage_->strtree_->query(geom_buffer->getEnvelopeInternal(), queryObjs);
 
@@ -259,7 +350,7 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
                                                    dense_coord_list[1]->lat_);
             coord_angle = coord_angle / M_PI * 180.0;
         } else {
-            int start_index = index - 1;
+            int start_index = index;
             while(start_index-- > 0) {
                 if(Distance::distance(dense_coord_list[start_index], coord) > 1000) {
                     coord_angle = geo::geo_util::calcAngle(dense_coord_list[start_index]->lng_,

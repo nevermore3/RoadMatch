@@ -51,4 +51,14 @@ private:
 };
 
 
+class Points
+{
+public:
+    shared_ptr<KDCoord>point_;
+    shared_ptr<KDRoad>road_;
+    shared_ptr<KDRoad>matched_road_;
+    shared_ptr<KDCoord>matched_point_;
+    Points(shared_ptr<KDCoord>point, shared_ptr<KDRoad>road) : point_(point), road_(road) {}
+};
+
 #endif //HDMAP_DIFFER_FUSION_ROAD_MATCH_H
