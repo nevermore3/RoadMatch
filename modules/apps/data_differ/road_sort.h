@@ -51,7 +51,7 @@ void FilterRoad(vector<T> &array, int flag)
     Compare<T> compare(flag);
     sort(array.begin(), array.end(), compare);
     //保留前count个
-    size_t count = 3;
+    size_t count = 2;
     size_t i = 1;
     auto iter = array.begin();
     while (iter != array.end()) {

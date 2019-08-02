@@ -155,7 +155,78 @@ void RoadMatch::DiffRoad(shared_ptr<KDRoad> road, vector<shared_ptr<KDRoad>> &ob
 
 bool RoadMatch::DoDiff(shared_ptr<KDRoad> road, list<shared_ptr<KDRoad>> &result)
 {
+    //将匹配到的link组合成一条road
+    vector<shared_ptr<KDCoord>>matchRoad;
+    auto iter = result.begin();
+    while (iter != result.end()) {
+        auto iter2 = iter;
+        if (++iter2 == result.end()) {
+            matchRoad.insert(matchRoad.end(), (*iter)->points_.begin(), (*iter)->points_.end());
+        } else {
+            matchRoad.insert(matchRoad.end(), (*iter)->points_.begin(), (*iter)->points_.end() - 1);
+        }
+        iter++;
+    }
+    // matchroad 和road进行差分
+    double threshold = 20;
+    double distance = 0;
+    int8_t  locate = 0;
+    int32_t posIndex = 0;
+    shared_ptr<KDCoord> foot = make_shared<KDCoord>();
+    size_t count = 0;
+    double tempLength = 0;
 
+    shared_ptr<KDCoord>pre = nullptr;
+    shared_ptr<KDCoord>current = nullptr;
+    vector<shared_ptr<KDCoord>>newPoints;
+
+    size_t  i = 0;
+
+    for (; i < road->points_.size(); i++) {
+        if (i != 0) {
+            pre = current;
+        }
+        current = road->points_[i];
+        distance = Distance::distance(road->points_[i], matchRoad, foot, &posIndex, &locate, 0, -1) / 100;
+        if ((locate == 0  && distance < threshold) ) {
+            if (count != 0) {
+                if (count >=2 && tempLength > 100) {
+                    shared_ptr<KDRoad>deleteRoad  = make_shared<KDRoad>();
+                    deleteRoad->points_.swap(newPoints);
+                    deleteRoad->length_ = tempLength;
+                    deleteRoad->id_ = road->id_;
+                    deleteRoad->mesh_id_ = road->mesh_id_;
+                    DeleteRoad(deleteRoad);
+                } else {
+                    //tempLength太小的忽略不记为新增
+                    vector<shared_ptr<KDCoord>>().swap(newPoints);
+                }
+                count = 0;
+                tempLength = 0;
+            }
+            continue;
+        }
+
+        if (locate != 0 || distance > threshold) {
+            if (count != 0) {
+                tempLength += Distance::distance(pre, current) / 100;
+            }
+            count++;
+            newPoints.push_back(road->points_[i]);
+        }
+
+    }
+
+    if (count >= 0  &&  tempLength > 20) {
+        shared_ptr<KDRoad>deleteRoad  = make_shared<KDRoad>();
+        deleteRoad->points_.swap(newPoints);
+        deleteRoad->length_ = tempLength;
+        deleteRoad->id_ = road->id_;
+        deleteRoad->mesh_id_ = road->mesh_id_;
+        DeleteRoad(deleteRoad);
+    }
+
+    return true;
 }
 
 bool RoadMatch::CheckMatchRoad(vector<shared_ptr<KDCoord>> &road, shared_ptr<Route> baseRoute)
