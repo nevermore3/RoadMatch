@@ -21,7 +21,7 @@
 bool Viterbi::Compute(const list<shared_ptr<CadidatesStep>> &steplist,
                       bool keepMessageHistory,
                       list<shared_ptr<KDRoad>> &res_list,
-                      IManager *mesh_manage) {
+                      IManager *mesh_manage, bool slip) {
     if (steplist.empty())
         return false;
 
@@ -81,8 +81,9 @@ bool Viterbi::Compute(const list<shared_ptr<CadidatesStep>> &steplist,
         BuildFullPath(mostLikelySequence.sequence_, res_list, mesh_manage);
     }
 
-    if(!is_connect&&res_list.size()<3)
+    if(!is_connect&&(res_list.size()<3 || slip))
         res_list.clear();
+
 
     return true;
 }
