@@ -24,6 +24,9 @@ public:
     void CloseRoute(shared_ptr<Route>route, list<shared_ptr<KDRoad>> &result);
 
     void DiffRoad(shared_ptr<Route>route);
+
+    void DiffRoad(shared_ptr<KDRoad>road, vector<shared_ptr<KDRoad>> &objs);
+
     void DiffRoad2(shared_ptr<Route>route);
 
 
@@ -36,6 +39,8 @@ public:
     void Statistic();
 
     void DoDiff(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result);
+
+    bool DoDiff(shared_ptr<KDRoad> road, list<shared_ptr<KDRoad>> &result);
 private:
     // 按照mesh管理的
     unordered_map<string, shared_ptr<MeshObj>> meshs_;
@@ -45,6 +50,8 @@ private:
     void AddRoad(shared_ptr<KDRoad>newRoad);
 
     bool CheckMatchRoad(vector<shared_ptr<KDCoord>> &road, shared_ptr<Route> route);
+
+
 };
 
 

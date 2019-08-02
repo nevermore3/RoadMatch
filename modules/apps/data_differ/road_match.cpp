@@ -36,12 +36,10 @@ using namespace std;
 bool RoadMatch::MatchProcess()
 {
     cout<<"Start Match Process"<<endl;
-
     //查找新增的road
     MatchAdd();
     //查找删除的road
     //MatchDelete();
-
     Statistic();
     GlobalCache *globalCache = GlobalCache::GetInstance();
     string output = globalCache->out_path();
@@ -82,18 +80,18 @@ void RoadMatch::MatchAdd()
 
 void RoadMatch::MatchDelete()
 {
-    MeshManager *src = MeshManager::GetInstance();
+    MeshManager *base = MeshManager::GetInstance();
     DiffDataManager *dest = DiffDataManager::GetInstance();
 
-    for (auto srcMesh : src->meshs_) {
-        string meshID = srcMesh.first;
-        for (auto srcRoad : srcMesh.second->roads_) {
-            shared_ptr<KDRoad>srcRoadObj = srcRoad.second;
+    for (auto baseMesh : base->meshs_) {
+        string meshID = baseMesh.first;
+        for (auto baseRoad : baseMesh.second->roads_) {
+            shared_ptr<KDRoad>roadObj = baseRoad.second;
 
             // get buffer in dest
             double bufferSize = 20;
             vector<void *>temp;
-            shared_ptr<LineString>searchLine = GeometryUtil::CreateLineString(srcRoadObj->points_);
+            shared_ptr<LineString>searchLine = GeometryUtil::CreateLineString(roadObj->points_);
             shared_ptr<geos::geom::Geometry> geom_buffer(searchLine->buffer(bufferSize));
             dest->strtree_->query(geom_buffer->getEnvelopeInternal(), temp);
 
@@ -104,17 +102,61 @@ void RoadMatch::MatchDelete()
             }
 
             if (queryObjs.empty()) {
-                //delete road
-                DeleteRoad(srcRoadObj);
+                DeleteRoad(roadObj);
             } else {
-
+                DiffRoad(roadObj, queryObjs);
             }
-
         }
     }
 }
 
+void RoadMatch::DiffRoad(shared_ptr<KDRoad> road, vector<shared_ptr<KDRoad>> &objs)
+{
+    DiffDataManager *diffDataManager = DiffDataManager::GetInstance();
 
+    shared_ptr<KDCoord>startPoint = road->points_.front();
+    shared_ptr<KDCoord>endPoint = road->points_.back();
+    vector<shared_ptr<QueryRoad>>startRoads;
+    vector<shared_ptr<QueryRoad>>endRoads;
+
+    for (const auto &roadObj : objs) {
+        double dis = Distance::distance(startPoint, roadObj->points_, nullptr, nullptr, nullptr, 0, -1) / 100;
+        shared_ptr<QueryRoad>sRoad = make_shared<QueryRoad>(roadObj);
+        sRoad->start_distance_ = dis;
+        startRoads.push_back(sRoad);
+        dis = Distance::distance(endPoint, roadObj->points_, nullptr, nullptr, nullptr, 0, -1) / 100;
+        shared_ptr<QueryRoad>eRoad = make_shared<QueryRoad>(roadObj);
+        eRoad->end_distance_ = dis;
+        endRoads.push_back(eRoad);
+    }
+    FilterRoad(startRoads, 0);
+    FilterRoad(endRoads, 1);
+
+    PathEngine engine;
+    engine.SetSearchCount(50);
+
+    for (const auto &startRoad : startRoads) {
+        for (const auto &endRoad : endRoads) {
+            std::list<shared_ptr<KDRoad>> result;
+            if (engine.FindPath(diffDataManager, -1, startRoad->road_, startRoad->road_->points_[0],
+                                endRoad->road_, endRoad->road_->points_[0], result)) {
+
+                if (result.empty()) {
+                    continue;
+                } else {
+                    if (DoDiff(road, result))
+                        return;
+                }
+            }
+        }
+    }
+    DeleteRoad(road);
+}
+
+bool RoadMatch::DoDiff(shared_ptr<KDRoad> road, list<shared_ptr<KDRoad>> &result)
+{
+
+}
 
 bool RoadMatch::CheckMatchRoad(vector<shared_ptr<KDCoord>> &road, shared_ptr<Route> baseRoute)
 {
