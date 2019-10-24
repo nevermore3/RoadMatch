@@ -1,7 +1,3 @@
-//
-// Created by joseph on 2018/8/15.
-//
-
 #ifndef AUTOHDMAP_GEO_MESHGRIDOBJECTEXT_HPP
 #define AUTOHDMAP_GEO_MESHGRIDOBJECTEXT_HPP
 

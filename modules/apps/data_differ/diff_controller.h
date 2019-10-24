@@ -1,7 +1,3 @@
-//
-// Created by liujian on 19-7-10.
-//
-
 #ifndef TD_DATA_DIFFER_DIFF_CONTROLLER_H
 #define TD_DATA_DIFFER_DIFF_CONTROLLER_H
 

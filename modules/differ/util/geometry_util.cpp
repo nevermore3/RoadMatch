@@ -1,7 +1,3 @@
-//
-// Created by gaoyanhong on 2018/12/18.
-//
-
 #include "geometry_util.h"
 
 #include "geos/geom/Coordinate.h"

@@ -1,7 +1,3 @@
-//
-// Created by liujian on 19-7-9.
-//
-
 #ifndef TD_DATA_DIFFER_DIFF_DATA_MANAGER_H
 #define TD_DATA_DIFFER_DIFF_DATA_MANAGER_H
 
@@ -41,9 +37,13 @@ protected:
     }
 
 public:
+    // 按照mesh管理
     unordered_map<string, shared_ptr<MeshObj>> meshs_;
 
+    // key: mortonCode  value: node对象
     unordered_map<int64_t, set<shared_ptr<KDRoadNode>>> code_node_;
+
+    // key: road中每个行点的mortonCode  value: road对象
     unordered_map<int64_t, set<shared_ptr<KDRoad>>> code_road_;
 
 

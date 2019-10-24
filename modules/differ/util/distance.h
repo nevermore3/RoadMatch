@@ -1,7 +1,3 @@
-//
-// Created by Liu Jian on 2018/10/9.
-//
-
 #ifndef NDS_VIEWER_DISTANCE_H
 #define NDS_VIEWER_DISTANCE_H
 

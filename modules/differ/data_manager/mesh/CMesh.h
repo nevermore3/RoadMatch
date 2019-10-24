@@ -1,7 +1,3 @@
-//
-// Created by zhangbenxing on 2018/8/16.
-//
-
 #ifndef FULL_AUTOMAPPING_CMESH_H
 #define FULL_AUTOMAPPING_CMESH_H
 

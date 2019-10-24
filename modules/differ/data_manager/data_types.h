@@ -1,7 +1,3 @@
-//
-// Created by liujian on 19-7-9.
-//
-
 #ifndef TD_DATA_DIFFER_DATA_TYPES_H
 #define TD_DATA_DIFFER_DATA_TYPES_H
 
@@ -64,6 +60,7 @@ public:
 
 class KDRoad;
 
+// 节点类
 class KDRoadNode {
 public:
     KDRoadNode() = default;
@@ -75,8 +72,10 @@ public:
 
     string mesh_id_;
 
+    //坐标
     KDCoord coord_;
 
+    //是否是边界点 1 : 是边界点  0 不是边界点
     int32_t boundary_;
 
     vector<shared_ptr<KDRoad>> from_roads_;
@@ -85,22 +84,29 @@ public:
 
     //跨mesh拓扑关系
     string adj_mesh_id_;
+
+    // 临结节点的ID
     int32_t adj_id_;
 };
 
 
 class KDRoad {
 public:
+    //道路ID
     int64_t id_;
 
+    // 开始节点
     int64_t f_node_id_;
 
+    //结束节点
     int64_t t_node_id_;
 
+    //道路方向
     int32_t direction_;
 
     int32_t road_type_;
 
+    // 道路等级，区分高速公路
     int32_t road_class_;
 
     int32_t f_class_;
@@ -108,11 +114,15 @@ public:
     int8_t form_way_;
 
     vector<shared_ptr<KDCoord>> points_;
+
+    // 每一条road到几何索引
     shared_ptr<LineString> line_;
 
     string mesh_id_;
+
     string road_name_;
 
+    //道路长度
     double length_;
     ~KDRoad() {
         vector<shared_ptr<KDCoord>>().swap(points_);

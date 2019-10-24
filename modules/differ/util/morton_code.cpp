@@ -1,9 +1,6 @@
-//
-// Created by cairunbo on 18-10-31.
-//
-
 #include "util/morton_code.h"
 
+// 根据坐标点生成唯一值， 坐标点一样则生成的数值一样
 int64_t MortonCode::GetMortonCodeFromRAWCoord( const double& x,const double& y )
 {
     return GetMortonCodeFromNDSCoord( GetNDSCoordFromRAW(x), GetNDSCoordFromRAW(y) );

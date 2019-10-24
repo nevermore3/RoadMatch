@@ -1,7 +1,3 @@
-//
-// Created by liujian on 19-7-10.
-//
-
 #include <geom/geo_util.h>
 #include <output/shp_output.h>
 #include "diff_controller.h"
@@ -29,7 +25,7 @@ bool DiffController::Differing() {
 
     if(!data_manager.LoadData())
         return false;
-    // step 2： 组成长路径
+    // step 2： 待差分数据组成长路径
     RouteManager *routeManager = RouteManager::GetInstance();
     routeManager->LoadRoute();
 

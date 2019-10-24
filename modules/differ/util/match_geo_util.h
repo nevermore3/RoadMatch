@@ -1,7 +1,3 @@
-//
-// Created by gaoyanhong on 2018/12/18.
-//
-
 #ifndef MATCH_CORE_GEO_UTIL_H
 #define MATCH_CORE_GEO_UTIL_H
 

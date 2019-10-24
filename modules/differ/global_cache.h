@@ -1,7 +1,3 @@
-//
-// Created by gaoyanhong on 2018/11/13.
-//
-
 #ifndef MATCH_CORE_GLOBALCACHE_H
 #define MATCH_CORE_GLOBALCACHE_H
 

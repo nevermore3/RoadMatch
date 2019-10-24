@@ -1,7 +1,3 @@
-//
-// Created by Liu Jian on 2019/1/16.
-//
-
 #ifndef ROAD_MATCH_SERVICE_PATH_ENGINE_H
 #define ROAD_MATCH_SERVICE_PATH_ENGINE_H
 

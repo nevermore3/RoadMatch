@@ -1,7 +1,3 @@
-//
-// Created by ubuntu on 19-7-31.
-//
-
 #ifndef HDMAP_DIFFER_FUSION_ROAD_SORT_H
 #define HDMAP_DIFFER_FUSION_ROAD_SORT_H
 

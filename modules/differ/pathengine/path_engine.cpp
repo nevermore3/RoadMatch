@@ -1,7 +1,3 @@
-//
-// Created by Liu Jian on 2019/1/16.
-//
-
 #include "path_engine.h"
 #include "util/geometry_util.h"
 #include "geom/geo_util.h"

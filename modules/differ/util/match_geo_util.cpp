@@ -1,7 +1,3 @@
-//
-// Created by gaoyanhong on 2018/12/18.
-//
-
 #include "match_geo_util.h"
 
 #include "geom/geo_util.h"

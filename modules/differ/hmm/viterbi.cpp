@@ -1,7 +1,3 @@
-//
-// Created by Liu Jian on 2019/3/5.
-//
-
 #include "viterbi.h"
 #include "pathengine/path_engine.h"
 #include "hmm_probability.h"

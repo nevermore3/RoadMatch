@@ -1,7 +1,3 @@
-//
-// Created by gaoyanhong on 2018/12/10.
-//
-
 #include "mesh_manager.h"
 
 #include "geos/geom/Coordinate.h"
@@ -32,7 +28,7 @@ using namespace kd::automap;
 MeshObj::MeshObj() {
 
 }
-
+// 根据mesh名称:"J50F009012" 和路径载入该mesh对象
 bool MeshObj::LoadMesh(const string &mesh_id, const string &mesh_path, shared_ptr<STRtree> quadtree) {
 
     //cout << "[Debug] Load mesh begin, mesh id " << mesh_id << endl;
@@ -47,6 +43,7 @@ bool MeshObj::LoadMesh(const string &mesh_id, const string &mesh_path, shared_pt
             string mesh_data_path = GlobalCache::GetInstance()->mesh_data_path();
             string path = mesh_data_path + "/" + adj_mesh_name + "/";
             string adjNodeFile = path + "Node";
+            // 将该mesh相邻的 mesh中的边界节点全部保存
             if (!LoadAdjNode(adjNodeFile)) {
                 LOG(WARNING) << "Load adj " << adjNodeFile << " road error.";
             }
@@ -66,6 +63,7 @@ bool MeshObj::LoadMesh(const string &mesh_id, const string &mesh_path, shared_pt
         return false;
     }
 
+    // 建立NODE到from_roads 和 to_roads
     if (!BuildTopReleation()) {
         LOG(ERROR) << "Build top relation error.";
         return false;
@@ -110,13 +108,13 @@ bool MeshObj::LoadRoad(string file_name, shared_ptr<STRtree> quadtree) {
         }
 
 
-        if (road->road_class_ != 41000
-            && road->road_class_ != 43000
-            && road->form_way_ !=3
-            && road->form_way_ != 8
-            && road->form_way_ != 53
-            && road->form_way_ != 58)
-            continue;
+//        if (road->road_class_ != 41000
+//            && road->road_class_ != 43000
+//            && road->form_way_ !=3
+//            && road->form_way_ != 8
+//            && road->form_way_ != 53
+//            && road->form_way_ != 58)
+//            continue;
 
         if (road->form_way_ == 5)
             continue;
@@ -124,8 +122,8 @@ bool MeshObj::LoadRoad(string file_name, shared_ptr<STRtree> quadtree) {
 //        if (road->road_class_ >= 47000 && road->road_class_ != 51000 && road->form_way_ != 2  && road->road_class_ != 52000)
 //            continue;
 
-//        if (road->road_class_ != 41000)
-//            continue;
+        if (road->road_class_ != 41000)
+            continue;
 
         //read road geometry
         int vertex_nums = shpObject->nVertices;
@@ -192,6 +190,7 @@ bool MeshObj::LoadNode(string file_name) {
         mac_coord_deoffset(shpObject->padfX[0]/LONGLAT_RATIO, shpObject->padfY[0]/LONGLAT_RATIO,
                            &node->coord_.lng_, &node->coord_.lat_);
         node->coord_.z_ = shpObject->padfZ[0];
+        // 如果是边界点，建立边界关系
         if (node->boundary_ != 0) {
             int64_t morton_code = MortonCode::GetMortonCodeFromRAWCoord(node->coord_.lng_, node->coord_.lat_);
             auto adjnode = adj_nodes_.find(morton_code);
@@ -246,6 +245,7 @@ bool MeshObj::BuildTopReleation() {
         if (fnodeit != road_nodes_.end()) {
             shared_ptr<KDRoadNode> node = fnodeit->second;
             node->from_roads_.emplace_back(road);
+            // 0 是双向 1 是正常方向 2是逆向
             if(road->direction_ == 1 || road->direction_ == 0)
                 node->to_roads_.emplace_back(road);
         } else {
@@ -267,7 +267,7 @@ bool MeshObj::BuildTopReleation() {
         }
 
     }
-
+    //若出现孤立点，则删除
     std::list<int32_t> del_nodeids;
     for (auto nodeit : road_nodes_) {
         if (nodeit.second->from_roads_.empty() && nodeit.second->to_roads_.empty()) {

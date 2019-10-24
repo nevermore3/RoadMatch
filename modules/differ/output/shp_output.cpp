@@ -1,7 +1,3 @@
-//
-// Created by liujian on 19-7-12.
-//
-
 #include "shp_output.h"
 
 #include <shp/ShpData.hpp>

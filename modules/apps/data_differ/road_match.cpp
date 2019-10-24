@@ -1,7 +1,3 @@
-//
-// Created by ubuntu on 19-7-30.
-//
-
 #include "road_match.h"
 #include "data_manager/mesh_manager.h"
 #include "data_manager/diff_data_manager.h"
@@ -431,6 +427,7 @@ void RoadMatch::DiffRoad(shared_ptr<Route> route)
                                                      route->points_.back()->lng_,
                                                      route->points_.back()->lat_);
 
+        // 转换为角度
         routeAngle = routeAngle / M_PI * 180.0;
         routeAngle = (routeAngle > 180.0) ? (routeAngle - 360) : routeAngle;
 

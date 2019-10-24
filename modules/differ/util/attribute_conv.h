@@ -1,7 +1,3 @@
-//
-// Created by Liu Jian on 2019/1/24.
-//
-
 #ifndef ROAD_MATCH_CORE_ATTRIBUTE_CONVERT_H
 #define ROAD_MATCH_CORE_ATTRIBUTE_CONVERT_H
 

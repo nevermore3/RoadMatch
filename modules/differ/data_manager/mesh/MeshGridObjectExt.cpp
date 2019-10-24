@@ -1,7 +1,3 @@
-//
-// Created by joseph on 2018/8/15.
-//
-
 #include "MeshGridObjectExt.hpp"
 
 #include <sstream>

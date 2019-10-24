@@ -1,7 +1,3 @@
-//
-// Created by cairunbo on 18-10-31.
-//
-
 #ifndef AUTOHDMAP_COMPILE_MORTONCODE_H
 #define AUTOHDMAP_COMPILE_MORTONCODE_H
 

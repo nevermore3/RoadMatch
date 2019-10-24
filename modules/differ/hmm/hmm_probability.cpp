@@ -1,7 +1,3 @@
-//
-// Created by Liu Jian on 2019/3/5.
-//
-
 #include "hmm_probability.h"
 #include "geom/geo_util.h"
 #include "data_manager/mesh_manager.h"

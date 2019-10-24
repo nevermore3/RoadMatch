@@ -1,7 +1,3 @@
-//
-// Created by liujian on 19-7-12.
-//
-
 #ifndef SDMAP_DIFFER_FUSION_SHP_OUTPUT_H
 #define SDMAP_DIFFER_FUSION_SHP_OUTPUT_H
 

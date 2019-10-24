@@ -1,7 +1,3 @@
-//
-// Created by liujian on 19-7-5.
-//
-
 #ifndef TD_DATA_DIFFER_ICOMPARE_H
 #define TD_DATA_DIFFER_ICOMPARE_H
 

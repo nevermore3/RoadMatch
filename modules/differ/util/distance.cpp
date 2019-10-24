@@ -1,7 +1,3 @@
-//
-// Created by Liu Jian on 2018/10/10.
-//
-
 #include "distance.h"
 
 #include <limits.h>

@@ -1,7 +1,3 @@
-//
-// Created by Liu Jian on 2019/1/24.
-//
-
 #include "attribute_conv.h"
 
 int32_t AttributeConv::ConvertRoadClass(int32_t roadclass) {

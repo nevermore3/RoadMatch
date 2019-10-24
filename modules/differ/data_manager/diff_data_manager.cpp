@@ -1,7 +1,3 @@
-//
-// Created by liujian on 19-7-9.
-//
-
 #include "diff_data_manager.h"
 #include "global_cache.h"
 #include "data_manager/mesh_manager.h"
@@ -84,24 +80,31 @@ bool DiffDataManager::LoadRoad(string fileName, shared_ptr<STRtree> strtree)
         road->id_ = shpData.readIntField(i, "id");
         road->road_name_ = shpData.readStringField(i, "name");
         road->mesh_id_ = shpData.readStringField(i, "block_id");
+        //因为由复杂路口到出现, fnodeId 和tonodeId 由mortonCode代替
         road->f_node_id_ = road->t_node_id_ = -1;
+
         road->direction_ = 1;
 
         //remove non-highway
-
-        if ((road->road_name_.find("二环") == std::string::npos &&
-             road->road_name_.find("三环") == std::string::npos &&
-             road->road_name_.find("四环") == std::string::npos &&
-             road->road_name_.find("五环") == std::string::npos &&
-             road->road_name_.find("六环") == std::string::npos) ||
-            (road->road_name_.find("辅路") != std::string::npos)) {
-
-
-            if (road->road_name_.find("辅路") != std::string::npos ||
-                road->road_name_.find("高速") == std::string::npos) {
-                continue;
-            }
+        if (road->road_name_.find("辅路") != std::string::npos ||
+            road->road_name_.find("高速") == std::string::npos) {
+            continue;
         }
+
+        // 增加环路
+//        if ((road->road_name_.find("二环") == std::string::npos &&
+//             road->road_name_.find("三环") == std::string::npos &&
+//             road->road_name_.find("四环") == std::string::npos &&
+//             road->road_name_.find("五环") == std::string::npos &&
+//             road->road_name_.find("六环") == std::string::npos) ||
+//            (road->road_name_.find("辅路") != std::string::npos)) {
+//
+//
+//            if (road->road_name_.find("辅路") != std::string::npos ||
+//                road->road_name_.find("高速") == std::string::npos) {
+//                continue;
+//            }
+//        }
 
         shared_ptr<MeshObj>meshObj;
         if (meshs_.find(road->mesh_id_) == meshs_.end()) {
@@ -253,8 +256,9 @@ bool DiffDataManager::LoadNode(string file_name)
         }
 
         string str = shpData.readStringField(i, "link_ids");
+        // 将node到from_roads和to_roads填充
         StringToVector(str, node, meshObj);
-
+        // 去除孤立到顶点
         if (node->from_roads_.empty()) {
             //remove non-way point
             continue;
@@ -300,6 +304,7 @@ void DiffDataManager::BuildBoundry()
         count++;
         shared_ptr<KDRoadNode> nodeA = *(codeNode.begin());
         shared_ptr<KDRoadNode> nodeB = *(codeNode.rbegin());
+        //建立边界关系
         if(nodeA->to_roads_.size() == 1 && nodeA->from_roads_.size() == 1) {
             nodeA->boundary_ = 1;
             nodeB->boundary_ = 1;

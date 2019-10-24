@@ -22,7 +22,7 @@ int main(int argc, const char* argv[]) {
     google::SetLogDestination(0, (out_path + "/output.log.").c_str());
 
     GlobalCache * globalCache = GlobalCache::GetInstance();
-    // mesh path /home/ubuntu/data/110000_old_all  /home/ubuntu/data/route_beijing  /home/ubuntu/log/output
+    // mesh path /home/jmq/data/110000  /home/jmq/data/route_beijing  /home/jmq/log/output
     // diff path /home/ubuntu/data/route_beijing
     // output    /home/ubuntu/log/output
 

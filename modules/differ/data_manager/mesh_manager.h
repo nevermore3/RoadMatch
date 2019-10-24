@@ -1,7 +1,3 @@
-//
-// Created by gaoyanhong on 2018/12/10.
-//
-
 #ifndef MATCH_CORE_MESH_CACHE_H
 #define MATCH_CORE_MESH_CACHE_H
 
@@ -17,7 +13,7 @@
 using namespace kd::autohdmap;
 using namespace geos::index::quadtree;
 using namespace geos::geom;
-
+// 管理一个mesh
 class MeshObj {
 public:
     MeshObj();
@@ -38,8 +34,13 @@ private:
 public:
     string mesh_id_;
 
+    // 保存road  key: roadID, value: road对象
     unordered_map<int32_t, shared_ptr<KDRoad>> roads_;
+
+    // 保存节点  key: nodeID value: node对象
     unordered_map<int32_t, shared_ptr<KDRoadNode>> road_nodes_;
+
+    // 保存当前mesh中临结到节点  key: mortoncode  value :node对象
     unordered_map<int64_t, shared_ptr<KDRoadNode>> adj_nodes_;
 
 
@@ -83,10 +84,12 @@ private:
                              vector<string>& mesh_list);
 
 public:
+    //key : ""J50F009012"" value: mesh对象
     unordered_map<string, shared_ptr<MeshObj>> meshs_;
 
     //所有加载的道路数据空间索引
     shared_ptr<Quadtree> quadtree_;
+    //key : 根据value生成到数字  value: "J50F009012"
     unordered_map<int32_t, string> mesh_id_map_;
 
     set<string> mesh_set_;

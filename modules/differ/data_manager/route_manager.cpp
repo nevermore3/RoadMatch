@@ -1,7 +1,3 @@
-//
-// Created by ubuntu on 19-7-30.
-//
-
 #include "route_manager.h"
 #include "geos/geom/Coordinate.h"
 #include "geos/geom/GeometryFactory.h"
@@ -102,6 +98,7 @@ void RouteManager::ExtendFrom(shared_ptr<Route> route, shared_ptr<KDRoad> road)
         return;
     }
     if (fromRoad->road_name_ != route->route_name_) {
+        // 只放第一个行点
         if (preRoad->f_node_id_ == road->f_node_id_) {
             route->points_.insert(route->points_.begin(), road->points_.rbegin(), road->points_.rbegin() + 1);
         } else {
@@ -171,6 +168,11 @@ bool RouteManager::Init()
 {
     const geos::geom::GeometryFactory *gf = geos::geom::GeometryFactory::getDefaultInstance();
 
+    /*
+     *  road合并为route的根据
+     *  1 路名相同
+     *  2 没有分叉口
+     */
     for (const auto &mesh : meshs_) {
         for (const auto &road : mesh.second->roads_) {
             shared_ptr<KDRoad> roadObj = road.second;
@@ -216,10 +218,12 @@ bool RouteManager::Init()
                         cout << "Error fromRoad !!!" << endl;
                     }
                     if (fromRoad->road_name_ != route->route_name_) {
+                        // roadName不相同
                         route->points_.insert(route->points_.begin(), roadObj->points_.begin(), roadObj->points_.begin() + 1);
                     }
                     ExtendFrom(route, fromRoad);
                 } else {
+                    // 有分叉口
                     route->points_.insert(route->points_.begin(), roadObj->points_.begin(), roadObj->points_.begin() + 1);
                 }
             }

@@ -1,7 +1,3 @@
-//
-// Created by Liu Jian on 2019/3/5.
-//
-
 #ifndef ROAD_MATCH_SERVICE_BIND_H
 #define ROAD_MATCH_SERVICE_BIND_H
 
