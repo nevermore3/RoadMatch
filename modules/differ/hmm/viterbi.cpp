@@ -84,6 +84,7 @@ bool Viterbi::Compute(const list<shared_ptr<CadidatesStep>> &steplist,
     return true;
 }
 
+// 初始化概率
 bool Viterbi::InitalProbability(shared_ptr<CadidatesStep> firstTimeStep,
                                 unordered_map<shared_ptr<Bind>, double> &prob) {
     double probability = -1;

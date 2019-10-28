@@ -112,6 +112,7 @@ double HmmProbability::GetRoutelength(shared_ptr<Bind> sourcePosition,
         }
     }
 
+    // 检查两条待选择road之间到拓扑关系，如果不连接，则放弃
     string path_key = GetPathKey(sourcePosition, targetPosition);
     auto road_list_it = path_map.find(path_key);
     if(road_list_it != path_map.end()) {

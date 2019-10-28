@@ -521,14 +521,21 @@ void RoadMatch::DiffRoad2(shared_ptr<Route> route)
 
 void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &result){
     PathEngine engine;
+    // 设置查找次数上限
     engine.SetSearchCount(20);
 //    if(route->id_ != 12)
 //        return;
+    /*
+     * 保存route的形点
+     * 如果两个行点之间到距离超过50m，则插入形点
+     * 否则行点之间太稀疏
+     */
     vector<shared_ptr<KDCoord>> dense_coord_list;
 //    double angle = geo::geo_util::calcAngle(136.232323, 39.0,
 //                                            136.232323, 39.1);
 
 
+    // 起始点和结束点的直线距离
     double ht_dist = Distance::distance(route->points_[0]->lng_, route->points_[0]->lat_,
                                         route->points_[route->points_.size() - 1]->lng_,
                                         route->points_[route->points_.size() - 1]->lat_) / 100;
@@ -536,6 +543,7 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
     if(ht_dist < 200.0 && route->total_length_ / ht_dist > 3.0)
         slip = true;
 
+    // 插值形点
     for(size_t i = 0; i < route->points_.size() - 1; ++i) {
         auto coord1 = route->points_[i];
         auto coord2 = route->points_[i+1];
@@ -562,14 +570,15 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
         dense_coord_list.emplace_back(coord2);
     }
 
-    //IManager* mesh_manage_ = data_manager.base_data_manager_;
+    // 基础路网
     IManager* mesh_manage_ = MeshManager::GetInstance();
 
     list<StepList> all_steps;
     StepList stepList;
+    // 遍历每个形点
     for (size_t index = 0; index < dense_coord_list.size(); index++) {
         shared_ptr<KDCoord> coord = dense_coord_list[index];
-
+        // 在基础路网中，route中每个形点周围50米内找基础路网中到road
         shared_ptr<Point> point(GeometryUtil::CreatePoint(coord));
         shared_ptr<geos::geom::Geometry> geom_buffer(point->buffer(50.0));
         vector<void *> queryObjs;
@@ -580,6 +589,7 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
         }
 
         double coord_angle = 0;
+
         if (index == 0) {
             coord_angle = geo::geo_util::calcAngle(coord->lng_, coord->lat_,
                                                    dense_coord_list[1]->lng_,
@@ -603,15 +613,18 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
         //构建可能的候选项
         shared_ptr<CadidatesStep> step = make_shared<CadidatesStep>();
         bool valid = false;
+        // queryObjs: 基础路网 遍历每个形点找到的road集合，首先确定方向
         for (auto &record : queryObjs) {
             KDRoad *road = (KDRoad *) record;
             int pos_index;
             shared_ptr<KDCoord> foot = make_shared<KDCoord>();
             double distance = Distance::distance(coord, road->points_, foot, &pos_index);
+            //如果距离过远，则放弃
             if (distance > 100.0 * 100)
                 continue;
 
             double base_angle = 0;
+            // 计算垂足点和下一个节点的方向
             if(pos_index == road->points_.size() - 1) {
                 base_angle = geo::geo_util::calcAngle(road->points_[pos_index - 1]->lng_,
                                                       road->points_[pos_index - 1]->lat_,
@@ -635,9 +648,10 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
             if (angle_diff > 180) {
                 angle_diff = 360 - angle_diff;
             }
+            // 如果角度差别过大，也放弃
             if(angle_diff > 45.0)
                 continue;
-
+            // 匹配到的基础路网的road 向route做映射
             int8_t start_loc;
             double start_dist2track = Distance::distance(road->points_[0],
                     route->points_, nullptr, nullptr, &start_loc);
@@ -703,6 +717,7 @@ void RoadMatch::CloseRoute(shared_ptr<Route> route, list<shared_ptr<KDRoad>> &re
     cout<<"route' size : "<<route->roads_.size()<<endl;
     //list<shared_ptr<KDRoad>> res_list;
     Viterbi viterbi;
+    // 在route和已经找到的匹配road集合中找到概率最大的roads集合
     viterbi.Compute(stepList.step_list_, false, result, mesh_manage_, slip);
 
     string output_path = GlobalCache::GetInstance()->out_path();

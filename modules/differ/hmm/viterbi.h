@@ -8,8 +8,13 @@
 
 class MostLikelySequence {
 public:
+    //保存最后匹配到的道路列表
     list<shared_ptr<Bind>> sequence_;
+
+    //对应的概率值
     list<unordered_map<shared_ptr<Bind>, double>> probability_sequence_;
+
+    // 保存每个节点 的前一个最大概率节点
     list<unordered_map<shared_ptr<Bind>, shared_ptr<Bind>>> back_pointer_sequence_;
 
     void clear() {
@@ -23,6 +28,8 @@ public:
 class ForwardStepResult {
 public:
     unordered_map<shared_ptr<Bind>, double> probability_;
+
+    //保存上个最大概率的状态， 可以回溯找到路径
     unordered_map<shared_ptr<Bind>, shared_ptr<Bind>> back_pointers_;
 };
 
